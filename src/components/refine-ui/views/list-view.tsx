@@ -52,10 +52,10 @@ export const ListViewHeader = ({
   return (
     <div className={cn("flex flex-col", "gap-4", wrapperClassName)}>
       <div className="flex items-center relative gap-2">
-        <div className="bg-background z-[2] pr-4">
+        <div className="bg-background z-2 pr-4">
           <Breadcrumb />
         </div>
-        <Separator className={cn("absolute", "left-0", "right-0", "z-[1]")} />
+        <Separator className={cn("absolute", "left-0", "right-0", "z-1")} />
       </div>
       <div className={cn("flex", "justify-between", "gap-4", headerClassName)}>
         <h2 className="text-2xl font-bold">{title}</h2>

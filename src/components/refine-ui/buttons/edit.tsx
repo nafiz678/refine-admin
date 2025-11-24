@@ -1,8 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { type BaseKey, useEditButton } from "@refinedev/core";
-import { Pencil } from "lucide-react";
+import {
+  type BaseKey,
+  useEditButton,
+} from "@refinedev/core";
+import { Pen } from "lucide-react";
 import React from "react";
 
 type EditButtonProps = {
@@ -35,15 +38,24 @@ export const EditButton = React.forwardRef<
   EditButtonProps
 >(
   (
-    { resource, recordItemId, accessControl, meta, children, onClick, ...rest },
-    ref
-  ) => {
-    const { hidden, disabled, LinkComponent, to, label } = useEditButton({
+    {
       resource,
-      id: recordItemId,
+      recordItemId,
       accessControl,
       meta,
-    });
+      children,
+      onClick,
+      ...rest
+    },
+    ref
+  ) => {
+    const { hidden, disabled, LinkComponent, to, label } =
+      useEditButton({
+        resource,
+        id: recordItemId,
+        accessControl,
+        meta,
+      });
 
     const isDisabled = disabled || rest.disabled;
     const isHidden = hidden || rest.hidden;
@@ -51,11 +63,20 @@ export const EditButton = React.forwardRef<
     if (isHidden) return null;
 
     return (
-      <Button {...rest} ref={ref} disabled={isDisabled} asChild>
+      <Button
+        {...rest}
+        ref={ref}
+        disabled={isDisabled}
+        asChild
+        variant={"ghost"}
+        className="text-left w-full justify-start px-2 py-0"
+      >
         <LinkComponent
           to={to}
           replace={false}
-          onClick={(e: React.PointerEvent<HTMLButtonElement>) => {
+          onClick={(
+            e: React.PointerEvent<HTMLButtonElement>
+          ) => {
             if (isDisabled) {
               e.preventDefault();
               return;
@@ -67,8 +88,8 @@ export const EditButton = React.forwardRef<
           }}
         >
           {children ?? (
-            <div className="flex items-center gap-2 font-semibold">
-              <Pencil className="h-4 w-4" />
+            <div className="flex items-center gap-2 p-0">
+              <Pen/>
               <span>{label}</span>
             </div>
           )}

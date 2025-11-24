@@ -4,7 +4,6 @@ import type { BaseRecord, HttpError } from "@refinedev/core";
 import type { UseTableReturnType } from "@refinedev/react-table";
 import type { Column } from "@tanstack/react-table";
 import { flexRender } from "@tanstack/react-table";
-import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { DataTablePagination } from "@/components/refine-ui/data-table/data-table-pagination";
@@ -80,7 +79,7 @@ export function DataTable<TData extends BaseRecord>({
 
   return (
     <div className={cn("flex", "flex-col", "flex-1", "gap-4")}>
-      <div ref={tableContainerRef} className={cn("rounded-md", "border")}>
+      <div ref={tableContainerRef} className={cn("rounded-xl", "border")}>
         <Table ref={tableRef} style={{ tableLayout: "fixed", width: "100%" }}>
           <TableHeader>
             {getHeaderGroups().map((headerGroup) => (
@@ -138,26 +137,6 @@ export function DataTable<TData extends BaseRecord>({
                     </TableRow>
                   )
                 )}
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className={cn("absolute", "inset-0", "pointer-events-none")}
-                  >
-                    <Loader2
-                      className={cn(
-                        "absolute",
-                        "top-1/2",
-                        "left-1/2",
-                        "animate-spin",
-                        "text-primary",
-                        "h-8",
-                        "w-8",
-                        "-translate-x-1/2",
-                        "-translate-y-1/2"
-                      )}
-                    />
-                  </TableCell>
-                </TableRow>
               </>
             ) : getRowModel().rows?.length ? (
               getRowModel().rows.map((row) => {

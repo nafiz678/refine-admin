@@ -35,7 +35,10 @@ export function Sidebar() {
   const { menuItems, selectedKey } = useMenu();
 
   return (
-    <ShadcnSidebar collapsible="icon" className={cn("border-none")}>
+    <ShadcnSidebar
+      collapsible="icon"
+      className={cn("border-none")}
+    >
       <ShadcnSidebarRail />
       <SidebarHeader />
       <ShadcnSidebarContent
@@ -76,25 +79,54 @@ function SidebarItem({ item, selectedKey }: MenuItemProps) {
   const { open } = useShadcnSidebar();
 
   if (item.meta?.group) {
-    return <SidebarItemGroup item={item} selectedKey={selectedKey} />;
+    return (
+      <SidebarItemGroup
+        item={item}
+        selectedKey={selectedKey}
+      />
+    );
   }
 
   if (item.children && item.children.length > 0) {
     if (open) {
-      return <SidebarItemCollapsible item={item} selectedKey={selectedKey} />;
+      return (
+        <SidebarItemCollapsible
+          item={item}
+          selectedKey={selectedKey}
+        />
+      );
     }
-    return <SidebarItemDropdown item={item} selectedKey={selectedKey} />;
+    return (
+      <SidebarItemDropdown
+        item={item}
+        selectedKey={selectedKey}
+      />
+    );
   }
 
-  return <SidebarItemLink item={item} selectedKey={selectedKey} />;
+  return (
+    <SidebarItemLink
+      item={item}
+      selectedKey={selectedKey}
+    />
+  );
 }
 
-function SidebarItemGroup({ item, selectedKey }: MenuItemProps) {
+function SidebarItemGroup({
+  item,
+  selectedKey,
+}: MenuItemProps) {
   const { children } = item;
   const { open } = useShadcnSidebar();
 
   return (
-    <div className={cn("border-t", "border-sidebar-border", "pt-4")}>
+    <div
+      className={cn(
+        "border-t",
+        "border-sidebar-border",
+        "pt-4"
+      )}
+    >
       <span
         className={cn(
           "ml-3",
@@ -132,7 +164,10 @@ function SidebarItemGroup({ item, selectedKey }: MenuItemProps) {
   );
 }
 
-function SidebarItemCollapsible({ item, selectedKey }: MenuItemProps) {
+function SidebarItemCollapsible({
+  item,
+  selectedKey,
+}: MenuItemProps) {
   const { name, children } = item;
 
   const chevronIcon = (
@@ -150,11 +185,19 @@ function SidebarItemCollapsible({ item, selectedKey }: MenuItemProps) {
   );
 
   return (
-    <Collapsible key={`collapsible-${name}`} className={cn("w-full", "group")}>
+    <Collapsible
+      key={`collapsible-${name}`}
+      className={cn("w-full", "group")}
+    >
       <CollapsibleTrigger asChild>
-        <SidebarButton item={item} rightIcon={chevronIcon} />
+        <SidebarButton
+          item={item}
+          rightIcon={chevronIcon}
+        />
       </CollapsibleTrigger>
-      <CollapsibleContent className={cn("ml-6", "flex", "flex-col", "gap-2")}>
+      <CollapsibleContent
+        className={cn("ml-6", "flex", "flex-col", "gap-2")}
+      >
         {children?.map((child: TreeMenuItem) => (
           <SidebarItem
             key={child.key || child.name}
@@ -167,7 +210,10 @@ function SidebarItemCollapsible({ item, selectedKey }: MenuItemProps) {
   );
 }
 
-function SidebarItemDropdown({ item, selectedKey }: MenuItemProps) {
+function SidebarItemDropdown({
+  item,
+  selectedKey,
+}: MenuItemProps) {
   const { children } = item;
   const Link = useLink();
 
@@ -182,12 +228,19 @@ function SidebarItemDropdown({ item, selectedKey }: MenuItemProps) {
           const isSelected = childKey === selectedKey;
 
           return (
-            <DropdownMenuItem key={childKey || child.name} asChild>
+            <DropdownMenuItem
+              key={childKey || child.name}
+              asChild
+            >
               <Link
                 to={child.route || ""}
-                className={cn("flex w-full items-center gap-2", {
-                  "bg-accent text-accent-foreground": isSelected,
-                })}
+                className={cn(
+                  "flex w-full items-center gap-2",
+                  {
+                    "bg-accent text-accent-foreground":
+                      isSelected,
+                  }
+                )}
               >
                 <ItemIcon
                   icon={child.meta?.icon ?? child.icon}
@@ -203,10 +256,19 @@ function SidebarItemDropdown({ item, selectedKey }: MenuItemProps) {
   );
 }
 
-function SidebarItemLink({ item, selectedKey }: MenuItemProps) {
+function SidebarItemLink({
+  item,
+  selectedKey,
+}: MenuItemProps) {
   const isSelected = item.key === selectedKey;
 
-  return <SidebarButton item={item} isSelected={isSelected} asLink={true} />;
+  return (
+    <SidebarButton
+      item={item}
+      isSelected={isSelected}
+      asLink={true}
+    />
+  );
 }
 
 function SidebarHeader() {
@@ -256,7 +318,7 @@ function SidebarHeader() {
             }
           )}
         >
-          {title.text}
+          Millennial Clothing
         </h2>
       </div>
 
@@ -294,7 +356,9 @@ function ItemIcon({ icon, isSelected }: IconProps) {
   );
 }
 
-type SidebarButtonProps = React.ComponentProps<typeof Button> & {
+type SidebarButtonProps = React.ComponentProps<
+  typeof Button
+> & {
   item: TreeMenuItem;
   isSelected?: boolean;
   rightIcon?: React.ReactNode;
@@ -315,7 +379,10 @@ function SidebarButton({
 
   const buttonContent = (
     <>
-      <ItemIcon icon={item.meta?.icon ?? item.icon} isSelected={isSelected} />
+      <ItemIcon
+        icon={item.meta?.icon ?? item.icon}
+        isSelected={isSelected}
+      />
       <span
         className={cn("tracking-[-0.00875rem]", {
           "flex-1": rightIcon,
@@ -340,12 +407,13 @@ function SidebarButton({
       variant="ghost"
       size="lg"
       className={cn(
-        "flex w-full items-center justify-start gap-2 py-2 !px-3 text-sm",
+        "flex w-full items-center justify-start gap-2 py-2 px-3! text-sm",
         {
           "bg-sidebar-primary": isSelected,
-          "hover:!bg-sidebar-primary/90": isSelected,
+          "hover:bg-sidebar-primary/90!": isSelected,
           "text-sidebar-primary-foreground": isSelected,
-          "hover:text-sidebar-primary-foreground": isSelected,
+          "hover:text-sidebar-primary-foreground":
+            isSelected,
         },
         className
       )}
@@ -353,7 +421,10 @@ function SidebarButton({
       {...props}
     >
       {asLink && item.route ? (
-        <Link to={item.route} className={cn("flex w-full items-center gap-2")}>
+        <Link
+          to={item.route}
+          className={cn("flex w-full items-center gap-2")}
+        >
           {buttonContent}
         </Link>
       ) : (
