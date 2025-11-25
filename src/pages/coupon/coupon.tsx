@@ -33,6 +33,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export type CouponProp =
   Database["content"]["Tables"]["coupons"]["Row"];
@@ -45,14 +46,16 @@ export default function Coupon() {
       columnHelper.accessor("code", {
         header: "Code",
         cell: ({ getValue }) => (
-          <span className="font-medium">{getValue()}</span>
+          <span className="font-medium text-base px-2 py-1 block">
+            {getValue()}
+          </span>
         ),
       }),
 
       columnHelper.accessor("couponType", {
         header: "Type",
         cell: ({ getValue }) => (
-          <Badge>
+          <Badge className="text-sm rounded-md">
             {getValue() === "PERCENTAGE"
               ? "Percentage"
               : "Fixed Amount"}
@@ -63,14 +66,24 @@ export default function Coupon() {
       columnHelper.display({
         header: "Discount",
         cell: ({ row }) =>
-          row.original.couponType === "PERCENTAGE"
-            ? `${row.original.discountPercentage}%`
-            : `৳${row.original.discountAmount}`,
+          row.original.couponType === "PERCENTAGE" ? (
+            <span className="px-2 py-1 block text-base">
+              {row.original.discountPercentage}%
+            </span>
+          ) : (
+            <span className="px-2 py-1 block text-base">
+              ৳{row.original.discountAmount}
+            </span>
+          ),
       }),
 
       columnHelper.accessor("minCartValue", {
         header: "Min Cart",
-        cell: ({ getValue }) => `৳${getValue()}`,
+        cell: ({ getValue }) => (
+          <span className="px-2 py-1 block text-base">
+            ৳{getValue()}
+          </span>
+        ),
       }),
 
       columnHelper.accessor("startDate", {
@@ -78,7 +91,7 @@ export default function Coupon() {
         cell: ({ getValue }) => {
           const d = toDate(getValue());
           return (
-            <span>
+            <span className="px-2 py-1 block text-base">
               {d ? format(d, "dd MMM yyyy") : "-"}
             </span>
           );
@@ -90,7 +103,7 @@ export default function Coupon() {
         cell: ({ getValue }) => {
           const d = toDate(getValue());
           return (
-            <span>
+            <span className="px-2 py-1 block text-base">
               {d ? format(d, "dd MMM yyyy") : "-"}
             </span>
           );
@@ -104,7 +117,12 @@ export default function Coupon() {
             table.refineCore.tableQuery.refetch;
 
           return (
-            <ActionsCell row={row} onRefetch={onRefetch} />
+            <div className="px-2 py-1">
+              <ActionsCell
+                row={row}
+                onRefetch={onRefetch}
+              />
+            </div>
           );
         },
       }),
@@ -121,6 +139,10 @@ export default function Coupon() {
       },
     },
   });
+
+  if (table.refineCore.tableQuery.isLoading) {
+    return <Loader />;
+  }
 
   return (
     <section className="container mx-auto space-y-5 p-4">
@@ -376,3 +398,77 @@ const formatLocalDateTime = (date: Date) => {
     date.getMinutes()
   )}:${pad(date.getSeconds())}`;
 };
+
+function Loader() {
+  const rows = Array.from({ length: 5 });
+
+  return (
+    <section className="container mx-auto space-y-5 p-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-48 rounded-md" />
+        <Skeleton className="h-10 w-32 rounded-md" />
+      </div>
+
+      {/* Table Skeleton */}
+      <div className="overflow-x-auto rounded-lg border border-border bg-background">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-muted">
+            <tr>
+              <th className="p-4 text-left">
+                <Skeleton className="h-4 w-20 rounded-md" />
+              </th>
+              <th className="p-4 text-left">
+                <Skeleton className="h-4 w-24 rounded-md" />
+              </th>
+              <th className="p-4 text-left">
+                <Skeleton className="h-4 w-16 rounded-md" />
+              </th>
+              <th className="p-4 text-left">
+                <Skeleton className="h-4 w-20 rounded-md" />
+              </th>
+              <th className="p-4 text-left">
+                <Skeleton className="h-4 w-28 rounded-md" />
+              </th>
+              <th className="p-4 text-left">
+                <Skeleton className="h-4 w-28 rounded-md" />
+              </th>
+              <th className="p-4 text-left">
+                <Skeleton className="h-4 w-20 rounded-md" />
+              </th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-border">
+            {rows.map((_, i) => (
+              <tr key={i}>
+                <td className="p-4">
+                  <Skeleton className="h-5 w-20 rounded-md" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-5 w-24 rounded-full" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-5 w-16 rounded-md" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-5 w-20 rounded-md" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-5 w-28 rounded-md" />
+                </td>
+                <td className="p-4">
+                  <Skeleton className="h-5 w-28 rounded-md" />
+                </td>
+                <td className="p-4 flex gap-2">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
