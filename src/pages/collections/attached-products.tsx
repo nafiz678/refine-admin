@@ -120,8 +120,8 @@ export function AttachedProducts({ collectionId }: Prop) {
             <TableHeader className="bg-muted/40">
               <TableRow className="hover:bg-transparent">
                 <TableHead>Product</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>
+                <TableHead>Department</TableHead>
+                <TableHead>CreateAt</TableHead>
                 <TableHead className="text-right">
                   Action
                 </TableHead>
@@ -140,7 +140,9 @@ export function AttachedProducts({ collectionId }: Prop) {
                     {product.department}
                   </TableCell>
                   <TableCell className="font-medium">
-                    ${product.meta?.toLocaleString()}
+                    {new Date(
+                      product.createdAt
+                    ).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
                     <AlertDialog>

@@ -19,7 +19,6 @@ import { BannerProp } from "./banner-list";
 import { supabaseClient } from "@/lib";
 import { QueryObserverResult } from "@tanstack/react-query";
 import { BannerImageCropper } from "./banner-image-cropper";
-import { generateFileName } from "../products/upload-image";
 
 type RefetchType = () => Promise<QueryObserverResult>;
 
@@ -107,7 +106,7 @@ const BannerForm = ({
     fileName: string
   ): Promise<string> => {
     const { data, error } = await supabaseClient.storage
-      .from("product")
+      .from("content")
       .upload(fileName, blob, {
         cacheControl: "3600",
         upsert: false,
@@ -119,7 +118,11 @@ const BannerForm = ({
   };
 
   const onSubmit = async (values: BannerProp) => {
-    if (!values.images || values.images.length === 0 || !croppedBlobs.length) {
+    if (
+      !values.images ||
+      values.images.length === 0 ||
+      !croppedBlobs.length
+    ) {
       toast.error("Please upload one banner image.");
       return;
     }
@@ -131,9 +134,12 @@ const BannerForm = ({
       const uploadedUrls: string[] = [];
       for (let i = 0; i < croppedBlobs.length; i++) {
         const blob = croppedBlobs[i];
-        const fileName = generateFileName();
+        const fileName = `${Date.now()}_${Math.random()
+          .toString(36)
+          .substring(2, 10)
+          .toUpperCase()}.jpg`;
         const url = await uploadImage(blob, fileName);
-        uploadedUrls.push(url);
+        uploadedUrls.push(`content/${url}`);
       }
 
       const payload = {

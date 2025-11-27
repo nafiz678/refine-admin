@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/card";
 import { supabaseClient } from "@/lib";
 import { useQuery } from "@tanstack/react-query";
-import { ProductFormData } from "../product-add-form";
+import { ProductFormData } from "../../product-form";
 
 interface ClassificationCardProps {
   form: UseFormReturn<ProductFormData>;
@@ -184,7 +184,7 @@ export function ClassificationCard({
                 <FormControl>
                   <Select
                     onValueChange={field.onChange}
-                    value={field.value}
+                    value={field.value || ""}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a Collection" />

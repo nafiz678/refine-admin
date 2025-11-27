@@ -2,7 +2,6 @@ import { CreateCollectionDialog } from "./dialog/create-collection-dialog";
 import { CollectionsList } from "./collections-list";
 import { useQuery } from "@tanstack/react-query";
 import { supabaseClient } from "@/lib";
-import { Database } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -16,9 +15,19 @@ import {
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  compressImage,
+  generateFileName,
+} from "../products/upload-image";
 
-export type CollectionProp =
-  Database["content"]["Tables"]["collection"]["Row"];
+export type CollectionProp = {
+  createdAt: string;
+  description: string | null;
+  id: string;
+  thumbnail: string | File;
+  title: string;
+  updatedAt: string;
+};
 
 export interface Product {
   id: string;
@@ -36,7 +45,7 @@ export interface CollectionProduct {
 export default function Collections() {
   const [searchQuery, setSearchQuery] = useState("");
   const {
-    data,
+    data: col,
     isLoading,
     refetch: refetchCollection,
   } = useQuery({
@@ -50,21 +59,47 @@ export default function Collections() {
       return data;
     },
   });
-  const collections = data ?? [];
+  const collections = col ?? [];
 
   const handleCreateCollection = async (
-    data: Omit<
+    values: Omit<
       CollectionProp,
       "id" | "createdAt" | "updatedAt"
     >
   ) => {
-    const newCollection: CollectionProp = {
+    let thumbnailUrl = "";
+
+    if (
+      values.thumbnail &&
+      values.thumbnail instanceof File
+    ) {
+      const compressedBase64 = await compressImage(
+        values.thumbnail
+      );
+      const fileName = generateFileName();
+
+      const { data, error } = await supabaseClient.storage
+        .from("content")
+        .upload(fileName, compressedBase64, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (error) {
+        toast.error("Failed to upload thumbnail");
+        return;
+      }
+
+      thumbnailUrl = data.path;
+    }
+
+    const newCollection = {
       id: Date.now().toString(36),
-      title: data.title,
-      description: data.description,
+      title: values.title,
+      description: values.description,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      thumbnail: "",
+      thumbnail: `content/${thumbnailUrl}`,
     };
 
     try {
@@ -86,17 +121,46 @@ export default function Collections() {
 
   const handleUpdateCollection = async (
     id: string,
-    data: Omit<
+    values: Omit<
       CollectionProp,
       "id" | "createdAt" | "updatedAt"
     >
   ) => {
     try {
+      let finalThumbnail = values.thumbnail;
+
+      // If user uploaded a new file
+      if (values.thumbnail instanceof File) {
+        const compressedBase64 = await compressImage(
+          values.thumbnail
+        );
+        const fileName = generateFileName();
+
+        const { data, error } = await supabaseClient.storage
+          .from("content")
+          .upload(
+            fileName,
+            compressedBase64,
+            {
+              cacheControl: "3600",
+              upsert: true,
+            }
+          );
+
+        if (error) {
+          toast.error("Failed to upload thumbnail");
+          return;
+        }
+
+        finalThumbnail = `content/${data.path}`;
+      }
+
       const { error } = await supabaseClient
         .schema("content")
         .from("collection")
         .update({
-          ...data,
+          ...values,
+          thumbnail: `content/${finalThumbnail}`,
           updatedAt: new Date().toISOString(),
         })
         .eq("id", id);
@@ -107,6 +171,11 @@ export default function Collections() {
         );
         return;
       }
+      console.log({
+        ...values,
+        thumbnail: `content/${finalThumbnail}`,
+        updatedAt: new Date().toISOString(),
+      });
 
       toast.success("Collection updated successfully");
       refetchCollection();

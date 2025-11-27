@@ -16,7 +16,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { ProductFormData } from "../product-add-form";
+import { ProductFormData } from "../../product-form";
 import { UseFormReturn } from "react-hook-form";
 import { KeywordsField } from "../keywords-field";
 

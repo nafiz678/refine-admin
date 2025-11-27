@@ -7,55 +7,72 @@ import {
 } from "@/components/ui/card";
 import BannerDialog from "./banner-dialog";
 import DeleteBannerPage from "./delete-banner";
-import { Database } from "@/lib/supabase";
-import { QueryObserverResult } from "@tanstack/react-query";
+import type { Database } from "@/lib/supabase";
+import type { QueryObserverResult } from "@tanstack/react-query";
 
-export type BannerProp = Database["content"]["Tables"]["banner"]["Row"] 
+export type BannerProp =
+  Database["content"]["Tables"]["banner"]["Row"];
 
 type RefetchType = () => Promise<QueryObserverResult>;
 
 type Props = {
   banners: BannerProp[];
-  refetchBanners?: RefetchType
+  refetchBanners?: RefetchType;
 };
 
 const BannerList = ({ banners, refetchBanners }: Props) => {
   return (
-    <section className="py-8">
-      <div className="flex flex-wrap justify-center gap-8 xl:justify-start">
+    <section>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {banners.map((banner) => (
           <Card
             key={banner.id}
-            className="flex flex-col w-full max-w-[260px] sm:max-w-[300px] md:max-w-[340px] rounded-xl border shadow-sm overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg"
+            className="group flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg h-full pt-0"
           >
-            {/* Image Section */}
-            <div className="relative w-full h-40 sm:h-48 md:h-56 overflow-hidden">
+            <div className="relative w-full h-48 md:h-56 overflow-hidden bg-muted">
               <img
-                src={banner.images[0] || "/placeholder.svg"}
+                src={`${
+                  import.meta.env.VITE_SUPABASE_URL
+                }/storage/v1/object/public/${
+                  banner.images[0]
+                }`}
                 alt={banner.title}
+                onError={(e) => {
+                  e.currentTarget.src = "/fallback.jpg";
+                }}
                 loading="lazy"
-                className=" h-full w-full object-cover transition-transform duration-300 hover:scale-110 "
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
             </div>
 
-            {/* Content */}
-            <CardContent className="flex flex-col items-center gap-2 px-3 py-3 text-center">
-              <CardTitle className="font-semibold text-base sm:text-lg truncate">
+            <CardContent className="flex flex-col gap-2 px-4 py-4 flex-1">
+              <CardTitle className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors">
                 {banner.title}
               </CardTitle>
 
-              <CardDescription className="text-xs sm:text-sm line-clamp-2">
-                {banner.description}
+              <CardDescription className="text-xs md:text-sm line-clamp-2 text-muted-foreground">
+                {banner.description ||
+                  "No description provided"}
               </CardDescription>
+
+              {banner.link && (
+                <div className="text-xs text-primary/70 line-clamp-1 mt-1">
+                  <span className="font-medium">Link:</span>{" "}
+                  {banner.link}
+                </div>
+              )}
             </CardContent>
 
-            {/* Footer */}
-            <CardFooter className="flex w-full justify-between border-t px-3 py-2 gap-2">
+            <CardFooter className="flex w-full justify-between gap-2 border-t px-4 py-3 bg-muted/40">
               <BannerDialog
                 bannerInfo={banner}
                 type="update"
               />
-              <DeleteBannerPage bannerId={banner.id} refetchBanners={refetchBanners}/>
+              <DeleteBannerPage
+                bannerId={banner.id}
+                refetchBanners={refetchBanners}
+              />
             </CardFooter>
           </Card>
         ))}

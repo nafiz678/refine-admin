@@ -22,8 +22,10 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { VariantFormData } from "@/lib/type";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 interface VariantsCardProps {
+  initialVariants?: VariantFormData[];
   variantFields: VariantFormData[];
   setVariantFields: React.Dispatch<
     React.SetStateAction<VariantFormData[]>
@@ -31,13 +33,26 @@ interface VariantsCardProps {
 }
 
 export function VariantsCard({
+  initialVariants,
   variantFields,
   setVariantFields,
 }: VariantsCardProps) {
+  // Initialize variants with unique IDs
+  useEffect(() => {
+    if (!initialVariants) return;
+    if (initialVariants.length > 0) {
+      const variantsWithId = initialVariants.map((v) => ({
+        ...v,
+      }));
+      setVariantFields(variantsWithId);
+    }
+  }, [initialVariants, setVariantFields]);
+
   const addVariant = () => {
     setVariantFields((prev) => [
       ...prev,
       {
+        id: crypto.randomUUID(),
         size: "M",
         color: "",
         stockQty: 0,
@@ -50,36 +65,31 @@ export function VariantsCard({
     ]);
   };
 
-  const removeVariant = (index: number) => {
+  const removeVariant = (index: string) => {
     setVariantFields((prev) =>
-      prev.filter((_, i) => i !== index)
+      prev.filter((i) => i.id !== index)
     );
   };
 
   const updateVariant = (
-    index: number,
+    id: string,
     value: Partial<VariantFormData>
   ) => {
     setVariantFields((prev) =>
-      prev.map((v, i) =>
-        i === index ? { ...v, ...value } : v
+      prev.map((v) =>
+        v.id === id ? { ...v, ...value } : v
       )
     );
   };
 
-  const handleImageChange = (
-    index: number,
-    file: File | null
-  ) => {
-    const MAX_SIZE = 2 * 1024 * 1024;
+  const handleImageChange = (id: string, file: File | null) => {
     if (!file) return;
+    const MAX_SIZE = 2 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
-      toast.error(
-        "File is too large. Maximum size allowed is 2MB."
-      );
+      toast.error("File is too large. Maximum size allowed is 2MB.");
       return;
     }
-    updateVariant(index, { image: file });
+    updateVariant(id, { image: file });
   };
 
   return (
@@ -87,14 +97,13 @@ export function VariantsCard({
       <CardHeader>
         <CardTitle>Product Variants</CardTitle>
         <CardDescription>
-          Add different sizes, colors, pricing, and images
-          for this product.
+          Add different sizes, colors, pricing, and images for this product.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {variantFields.map((variant, index) => (
-          <Card key={index} className="border p-4">
+        {variantFields.map((variant) => (
+          <Card key={variant.id} className="border p-4">
             <div className="grid gap-4 sm:grid-cols-3">
               {/* Size */}
               <FormItem>
@@ -102,27 +111,15 @@ export function VariantsCard({
                 <Select
                   value={variant.size}
                   onValueChange={(val) =>
-                    updateVariant(index, {
-                      size: val as VariantFormData["size"],
-                    })
+                    updateVariant(variant.id!, { size: val as VariantFormData["size"] })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {[
-                      "XS",
-                      "S",
-                      "M",
-                      "L",
-                      "XL",
-                      "XXL",
-                      "ONE_SIZE",
-                    ].map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
+                    {["XS","S","M","L","XL","XXL","ONE_SIZE"].map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -134,11 +131,7 @@ export function VariantsCard({
                 <FormControl>
                   <Input
                     value={variant.color}
-                    onChange={(e) =>
-                      updateVariant(index, {
-                        color: e.target.value,
-                      })
-                    }
+                    onChange={(e) => updateVariant(variant.id!, { color: e.target.value })}
                     placeholder="e.g., Red"
                   />
                 </FormControl>
@@ -152,11 +145,7 @@ export function VariantsCard({
                     type="number"
                     min={0}
                     value={variant.stockQty}
-                    onChange={(e) =>
-                      updateVariant(index, {
-                        stockQty: Number(e.target.value),
-                      })
-                    }
+                    onChange={(e) => updateVariant(variant.id!, { stockQty: Number(e.target.value) })}
                   />
                 </FormControl>
               </FormItem>
@@ -168,27 +157,14 @@ export function VariantsCard({
                 <FormLabel>Status</FormLabel>
                 <Select
                   value={variant.status}
-                  onValueChange={(val) =>
-                    updateVariant(index, {
-                      status:
-                        val as VariantFormData["status"],
-                    })
-                  }
+                  onValueChange={(val) => updateVariant(variant.id!, { status: val as VariantFormData["status"] })}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {[
-                      "IN_STOCK",
-                      "LOW_STOCK",
-                      "OUT_OF_STOCK",
-                      "DISCONTINUED",
-                      "COMING_SOON",
-                    ].map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
+                    {["IN_STOCK","LOW_STOCK","OUT_OF_STOCK","DISCONTINUED","COMING_SOON"].map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -202,11 +178,7 @@ export function VariantsCard({
                     type="number"
                     min={0}
                     value={variant.price}
-                    onChange={(e) =>
-                      updateVariant(index, {
-                        price: Number(e.target.value),
-                      })
-                    }
+                    onChange={(e) => updateVariant(variant.id!, { price: Number(e.target.value) })}
                   />
                 </FormControl>
               </FormItem>
@@ -219,42 +191,25 @@ export function VariantsCard({
                     type="number"
                     min={0}
                     value={variant.discountPrice}
-                    onChange={(e) =>
-                      updateVariant(index, {
-                        discountPrice: Number(
-                          e.target.value
-                        ),
-                      })
-                    }
+                    onChange={(e) => updateVariant(variant.id!, { discountPrice: Number(e.target.value) })}
                   />
                 </FormControl>
               </FormItem>
             </div>
 
-            {/* Image Upload */}
+            {/* Image */}
             <FormItem className="mt-2">
               <FormLabel>Variant Image</FormLabel>
               <FormControl>
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) =>
-                    handleImageChange(
-                      index,
-                      e.target.files
-                        ? e.target.files[0]
-                        : null
-                    )
-                  }
+                  onChange={(e) => handleImageChange(variant.id!, e.target.files ? e.target.files[0] : null)}
                 />
               </FormControl>
               {variant.image && (
                 <img
-                  src={
-                    variant.image
-                      ? URL.createObjectURL(variant.image)
-                      : variant.image
-                  }
+                  src={typeof variant.image === "string" ? variant.image : URL.createObjectURL(variant.image)}
                   alt="Variant Preview"
                   className="mt-2 h-24 w-24 object-cover rounded"
                 />
@@ -269,31 +224,19 @@ export function VariantsCard({
                   <Input
                     type="date"
                     value={variant.expiresAt}
-                    onChange={(e) =>
-                      updateVariant(index, {
-                        expiresAt: e.target.value,
-                      })
-                    }
+                    onChange={(e) => updateVariant(variant.id!, { expiresAt: e.target.value })}
                   />
                 </FormControl>
               </FormItem>
 
-              <Button
-                variant="destructive"
-                onClick={() => removeVariant(index)}
-                size="sm"
-              >
+              <Button variant="destructive" onClick={() => removeVariant(variant.id!)} size="sm">
                 <Trash2 className="w-4 h-4" /> Remove
               </Button>
             </div>
           </Card>
         ))}
 
-        <Button
-          type="button"
-          onClick={addVariant}
-          className="mt-2"
-        >
+        <Button type="button" onClick={addVariant} className="mt-2">
           Add Variant
         </Button>
       </CardContent>

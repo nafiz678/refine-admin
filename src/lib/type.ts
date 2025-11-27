@@ -20,8 +20,15 @@ export const productSchema = z.object({
   subCategoryId: z.string().optional(),
   collectionId: z.string().optional(),
   authorId: z.string().optional(),
-  thumbnail: z.instanceof(Blob).optional(),
-  images: z.array(z.string()).optional(),
+  thumbnail: z.union([
+    z.instanceof(Blob),
+    z.string(),
+    z.null(),
+  ]).optional(),
+
+  images: z
+    .array(z.union([z.string(), z.instanceof(File)]))
+    .optional(),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
   seoKeywords: z.array(z.string()).optional(),
@@ -33,13 +40,14 @@ export type VariantFormData = {
   color: string;
   stockQty: number;
   status:
-    | "IN_STOCK"
-    | "LOW_STOCK"
-    | "OUT_OF_STOCK"
-    | "DISCONTINUED"
-    | "COMING_SOON";
+  | "IN_STOCK"
+  | "LOW_STOCK"
+  | "OUT_OF_STOCK"
+  | "DISCONTINUED"
+  | "COMING_SOON";
   price: number;
   discountPrice?: number;
   expiresAt?: string;
   image?: File | undefined;
+  id: string;
 };

@@ -97,14 +97,14 @@ export const uploadThumbnail = async (file: Blob) => {
 /**
  * Upload multiple images (array of base64 strings)
  */
-export async function uploadImages(base64Images: string[]): Promise<string[]> {
-  const promises = base64Images.map(async (b64, i) => {
-    const file = base64ToFile(b64, `image-${i}.jpg`);
+export async function uploadImages(files: File[]): Promise<string[]> {
+  const promises = files.map(async (file) => {
     const compressed = await compressImage(file, 1200, 0.8);
     return uploadFile(compressed, "product");
   });
   return Promise.all(promises);
 }
+
 
 /**
  * Upload variant image

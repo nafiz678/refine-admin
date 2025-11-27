@@ -62,6 +62,7 @@ const Products = () => {
     return [
       columnHelper.accessor("title", {
         header: "Title",
+        enableSorting: false,
         cell: ({ row }) => {
           const images = row.original.images;
           if (!images) return;
@@ -77,8 +78,7 @@ const Products = () => {
                 width={60}
                 height={20}
                 onError={(e) => {
-                  e.currentTarget.src =
-                    "/fallback.jpg";
+                  e.currentTarget.src = "/fallback.jpg";
                 }}
                 alt=""
                 className="size-12 object-cover"
@@ -93,19 +93,23 @@ const Products = () => {
           );
         },
         size: 400,
+        meta: { disableSortBy: true }
       }),
       columnHelper.accessor("department", {
         header: "Department",
         cell: ({ row }) => row.original.department,
         size: 100,
+        meta: { disableSortBy: true }
       }),
       columnHelper.accessor("createdAt", {
         header: "Created At",
+        enableSorting: true,
         cell: ({ getValue }) =>
           new Date(getValue()).toLocaleDateString(),
       }),
       columnHelper.display({
         header: "Stock",
+        enableSorting: false,
         cell: ({ row }) => {
           const productId = row.original.id;
           const relatedVariants =
@@ -124,6 +128,7 @@ const Products = () => {
           );
         },
         size: 80,
+        meta: { disableSortBy: true }
       }),
       columnHelper.display({
         id: "actions",
@@ -231,8 +236,41 @@ const Products = () => {
       filters: {
         mode: "server",
       },
+      // sorters: {
+      //   initial: [
+      //     {
+      //       field: "createdAt",
+      //       order: "asc"
+      //     }
+      //   ]
+      // }
     },
   });
+
+  // const sorters = table.refineCore.sorters;
+
+  // Gets the current sort order for the fields
+  // const currentSorterOrders = useMemo(() => {
+  //   return {
+  //     createdAt:
+  //       sorters.find((item) => item.field === "createdAt")
+  //         ?.order || "desc",
+  //   };
+  // }, [sorters]);
+
+  // type SortField = "createdAt";
+
+  // const toggleSort = (field: SortField) => {
+  //   table.refineCore.setSorters([
+  //     {
+  //       field : "createdAt",
+  //       order:
+  //         currentSorterOrders[field] === "asc"
+  //           ? "desc"
+  //           : "asc",
+  //     },
+  //   ]);
+  // };
 
   if (table.refineCore.tableQuery.isLoading) {
     return <Loader />;
@@ -261,6 +299,16 @@ const Products = () => {
             }}
             className="w-60"
           />
+          {/* <Button
+            className="cursor-pointer border"
+            onClick={() => toggleSort("createdAt")}
+          >
+            Sort date by{" "}
+            {currentSorterOrders["createdAt"] === "asc"
+              ? "desc"
+              : "asc"}
+          </Button> */}
+
           <Link
             className={buttonVariants({
               variant: "default",

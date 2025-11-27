@@ -37,6 +37,7 @@ import {
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { supabaseClient } from "@/lib";
+import { useNavigate } from "react-router";
 
 export type CouponProp =
   Database["content"]["Tables"]["coupons"]["Row"];
@@ -67,6 +68,7 @@ type FormValues = z.infer<typeof baseSchema>;
 export default function AddCouponWizard() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(baseSchema),
@@ -205,7 +207,7 @@ export default function AddCouponWizard() {
   );
 
   return (
-    <Card className="max-w-4xl mx-auto shadow-lg border">
+    <Card className="w-full h-full mx-auto shadow-lg border">
       <CardHeader className="flex items-center justify-between">
         <CardTitle className="text-2xl font-semibold">
           Create Coupon
@@ -308,13 +310,10 @@ export default function AddCouponWizard() {
                       <div className="flex-1" />
                       <Button
                         variant="outline"
-                        onClick={() => {
-                          form.reset();
-                          setStep(1);
-                        }}
+                        onClick={() => navigate("/coupon")}
                         disabled={isSubmitting}
                       >
-                        Reset
+                        Back
                       </Button>
                       <Button onClick={goNext}>Next</Button>
                     </div>

@@ -15,7 +15,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { ThumbnailCropper } from "../thumnail-cropper";
-import { ProductFormData } from "../product-add-form";
+import { ProductFormData } from "../../product-form";
 import { MultipleImageUploadField } from "../multiple-image-upload";
 
 interface MediaCardProps {

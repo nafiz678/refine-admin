@@ -27,7 +27,9 @@ export function ProductSearchModal({
   excludeProductIds = [],
 }: ProductSearchModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(
+    []
+  );
   const { data: products } = useProducts();
 
   const filteredProducts = (products || []).filter(
@@ -106,11 +108,16 @@ export function ProductSearchModal({
 
                     {/* Product Image */}
                     <img
-                      src={
-                        product.images?.[0] ||
-                        "/placeholder.svg"
-                      }
+                      src={`${
+                        import.meta.env.VITE_SUPABASE_URL
+                      }/storage/v1/object/public/${
+                        product.images?.[0]
+                      }`}
                       alt={product.title}
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          "/fallback.jpg";
+                      }}
                       className="h-16 w-16 rounded-md border border-border object-cover"
                     />
 
@@ -123,7 +130,9 @@ export function ProductSearchModal({
                         {product.department}
                       </p>
                       <p className="mt-2 font-semibold text-foreground">
-                        ${product.meta?.toLocaleString()}
+                        {new Date(
+                          product.createdAt
+                        ).toLocaleDateString()}
                       </p>
                     </div>
                   </div>

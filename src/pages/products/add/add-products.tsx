@@ -1,9 +1,9 @@
-import { ProductAddForm } from "./product-add-form";
+import { ProductForm } from "../product-form";
 
 export default function AddProductPage() {
   return (
     <div className="min-h-screen bg-background">
-      <ProductAddForm />
+      <ProductForm />
     </div>
   );
 }

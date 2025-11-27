@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { EditProductForm } from "./edit-product-form";
+import { ProductForm } from "../product-form";
 
 export type ProductProp =
   Database["public"]["Tables"]["product"]["Row"];
@@ -31,9 +31,7 @@ const EditProduct = () => {
 
 
   return (
-    <EditProductForm
-      product={product}
-      isLoading={isLoading}
+    <ProductForm existingProduct={product}
     />
   );
 };
