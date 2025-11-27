@@ -152,14 +152,11 @@ export default function AddCouponWizard() {
         );
         return;
       }
-
-      console.log("Coupon created (client):", coupon);
       toast.success("Coupon created successfully");
       form.reset();
       setStep(1);
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to create coupon");
+      toast.error("Failed to create coupon" + err);
     } finally {
       setIsSubmitting(false);
     }

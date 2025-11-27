@@ -139,6 +139,7 @@ function App() {
                 syncWithLocation: true,
                 warnWhenUnsavedChanges: true,
                 projectId: "GfdQqS-RL3UpX-tQ9E9W",
+                liveMode: "auto"
               }}
             >
               <Routes>

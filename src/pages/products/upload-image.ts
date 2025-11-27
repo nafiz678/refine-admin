@@ -50,37 +50,49 @@ export async function compressImage(
 }
 
 /**
+ * Generate filename
+ */
+export function generateFileName() {
+  const timestamp = Date.now();
+  const randomStr = Math.random().toString(36).substring(2, 10).toUpperCase();
+  return `${timestamp}_${randomStr}.JPG`;
+}
+
+/**
  * Upload a single file to Supabase Storage
  */
 export async function uploadFile(
   file: File,
   bucket = "product"
 ): Promise<string> {
-  const filePath = generateFileName(file.name);
+  const filePath = generateFileName();
 
-  const { error } = await supabaseClient.storage
+  const { data, error } = await supabaseClient.storage
     .from(bucket)
-    .upload(filePath, file);
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
 
   if (error) throw error;
 
-  const { data: publicData } = supabaseClient.storage
-    .from(bucket)
-    .getPublicUrl(filePath);
-
-  return publicData.publicUrl;
+  return data.path;
 }
 
 /**
  * Upload a thumbnail base64 string
  */
-export async function uploadThumbnail(base64: string): Promise<string | null> {
-  if (!base64) return null;
-
-  const file = base64ToFile(base64, "thumbnail.jpg");
-  const compressed = await compressImage(file, 800, 0.8);
-  return await uploadFile(compressed, "product");
-}
+export const uploadThumbnail = async (file: Blob) => {
+  const fileName = generateFileName();
+  const { data, error } = await supabaseClient.storage
+    .from("product")
+    .upload(fileName, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+  if (error) throw error;
+  return data.path;
+};
 
 /**
  * Upload multiple images (array of base64 strings)
@@ -94,10 +106,11 @@ export async function uploadImages(base64Images: string[]): Promise<string[]> {
   return Promise.all(promises);
 }
 
-
-function generateFileName(originalName: string) {
-  const timestamp = Date.now();
-  const randomStr = Math.random().toString(36).substring(2, 10).toUpperCase();
-  const ext = originalName.split(".").pop(); 
-  return `${timestamp}_${randomStr}.${ext}`;
+/**
+ * Upload variant image
+ * Compresses the image before uploading
+ */
+export async function uploadVariantImage(file: File): Promise<string> {
+  const compressed = await compressImage(file, 800, 0.7);
+  return uploadFile(compressed, "product");
 }

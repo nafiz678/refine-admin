@@ -1,5 +1,3 @@
-import React from "react";
-// import { useUpdate, useDelete } from "@refinedev/core";
 import { useTable } from "@refinedev/react-table";
 import { createColumnHelper } from "@tanstack/react-table";
 import { ListView } from "@/components/refine-ui/views/list-view";
@@ -29,7 +27,6 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Trash2 } from "lucide-react";
-// import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
 import { Database } from "@/lib/supabase";
