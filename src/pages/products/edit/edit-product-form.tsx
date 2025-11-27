@@ -129,7 +129,7 @@ export function EditProductForm({
           },
         }
       );
-      console.log(formData.images)
+      console.log(formData.images);
     } catch (err) {
       toast.error(`Save failed! ${err}`);
     } finally {
@@ -435,6 +435,10 @@ export function EditProductForm({
                                   imageUrl ||
                                   "/placeholder.svg"
                                 }
+                                onError={(e) => {
+                                  e.currentTarget.src =
+                                    "/fallback.jpg";
+                                }}
                                 alt={`Product ${index + 1}`}
                                 className="object-cover w-full h-full"
                               />

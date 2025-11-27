@@ -76,6 +76,10 @@ const Products = () => {
                 src={imageUrl}
                 width={60}
                 height={20}
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "/fallback.jpg";
+                }}
                 alt=""
                 className="size-12 object-cover"
               />
