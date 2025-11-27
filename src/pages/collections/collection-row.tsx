@@ -1,30 +1,60 @@
-import { useState } from "react"
-import { TableCell, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Edit, Trash2 } from "lucide-react"
-import { EditCollectionDialog } from "./dialog/edit-collection-dialog"
-import { DeleteCollectionDialog } from "./dialog/delete-collection-dialog"
-import { CollectionProp } from "./collections"
-import { formatTime } from "@/lib/utils"
+import { useState } from "react";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2 } from "lucide-react";
+import { EditCollectionDialog } from "./dialog/edit-collection-dialog";
+import { DeleteCollectionDialog } from "./dialog/delete-collection-dialog";
+import { CollectionProp } from "./collections";
+import { formatTime } from "@/lib/utils";
 
 interface CollectionRowProps {
-  collection: CollectionProp
-  onUpdate: (id: string, data: Omit<CollectionProp, "id" | "createdAt" | "updatedAt">) => void
-  onDelete: (id: string) => void
+  collection: CollectionProp;
+  onUpdate: (
+    id: string,
+    data: Omit<
+      CollectionProp,
+      "id" | "createdAt" | "updatedAt"
+    >
+  ) => void;
+  onDelete: (id: string) => void;
 }
 
-export function CollectionRow({ collection, onUpdate, onDelete }: CollectionRowProps) {
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-
+export function CollectionRow({
+  collection,
+  onUpdate,
+  onDelete,
+}: CollectionRowProps) {
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   return (
     <>
       <TableRow className="hover:bg-muted/30 transition-colors">
-        <TableCell className="font-medium text-foreground">{collection.title}</TableCell>
-        <TableCell className="max-w-xs truncate text-muted-foreground">{collection.description || "—"}</TableCell>
-        <TableCell className="text-sm text-muted-foreground">{formatTime(collection.createdAt)}</TableCell>
-        <TableCell className="text-sm text-muted-foreground">{formatTime(collection.updatedAt)}</TableCell>
+        <TableCell className="font-medium text-foreground">
+          <div className="flex items-center gap-2">
+            {collection.thumbnail && (
+              <img
+                src={`${
+                  import.meta.env.VITE_SUPABASE_URL
+                }/storage/v1/object/public/${
+                  collection.thumbnail
+                }`}
+                alt={collection.title}
+                className="h-8 w-8 rounded object-cover"
+              />
+            )}
+            <span>{collection.title}</span>
+          </div>
+        </TableCell>
+        <TableCell className="max-w-xs truncate text-muted-foreground">
+          {collection.description || "—"}
+        </TableCell>
+        <TableCell className="text-sm text-muted-foreground">
+          {formatTime(collection.createdAt)}
+        </TableCell>
+        <TableCell className="text-sm text-muted-foreground">
+          {formatTime(collection.updatedAt)}
+        </TableCell>
         <TableCell className="text-right">
           <div className="flex justify-end gap-2">
             <Button
@@ -63,5 +93,5 @@ export function CollectionRow({ collection, onUpdate, onDelete }: CollectionRowP
         onDelete={onDelete}
       />
     </>
-  )
+  );
 }
