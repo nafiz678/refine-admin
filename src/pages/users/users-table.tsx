@@ -57,9 +57,7 @@ import {
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
-// import type { UserWithRole } from "better-auth/plugins";
 import { MoreHorizontal } from "lucide-react";
-// import { useRouter, useSearchParams } from "next/navigation";
 import React, { useTransition } from "react";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -247,7 +245,7 @@ const UsersTable = ({
           onChange={(value) => {
             table.getColumn("email")?.setFilterValue(value);
             if (value) {
-              navigate("/admin/users");
+              navigate("/users");
             }
           }}
           placeholder={"Filter by email"}
@@ -408,18 +406,7 @@ function StatusList({
 
   const handleSelectFilter = (value: string | null) => {
     if (value) {
-      // const newParams = new URLSearchParams(filterBy.toString());
-      // newParams.set("filterBy", value);
-      // router.push(`?${newParams.toString()}`);
       router("/admin/users");
-
-      // navigate({
-      //   to: "/admin/users",
-      //   search: (prev) => ({
-      //     ...prev,
-      //     filterBy: value,
-      //   }),
-      // });
       setOpen(false);
     } else {
       router("/admin/users");

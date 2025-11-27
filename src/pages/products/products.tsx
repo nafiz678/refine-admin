@@ -4,7 +4,7 @@ import {
 } from "@/components/ui/button";
 import { Link } from "react-router";
 import { Database } from "@/lib/supabase";
-import React from "react";
+import React, { useState } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { EditButton } from "@/components/refine-ui/buttons/edit";
 import { useTable } from "@refinedev/react-table";
@@ -35,6 +35,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabaseClient } from "@/lib";
 import { useQuery } from "@tanstack/react-query";
 import { useDelete } from "@refinedev/core";
+import { Input } from "@/components/ui/input";
 
 export type ProductRow =
   Database["public"]["Tables"]["product"]["Row"];
@@ -43,6 +44,7 @@ export type ProductVariant =
   Database["public"]["Tables"]["productVariant"]["Row"];
 
 const Products = () => {
+  const [search, setSearch] = useState("");
   const { data: variants } = useQuery({
     queryKey: ["productVariants"],
     queryFn: async () => {
@@ -58,7 +60,7 @@ const Products = () => {
     const columnHelper = createColumnHelper<ProductRow>();
 
     return [
-      columnHelper.display({
+      columnHelper.accessor("title", {
         header: "Title",
         cell: ({ row }) => {
           const images = row.original.images;
@@ -222,6 +224,9 @@ const Products = () => {
     refineCoreProps: {
       syncWithLocation: true,
       resource: "product",
+      filters: {
+        mode: "server",
+      },
     },
   });
 
@@ -233,12 +238,34 @@ const Products = () => {
     <section className="container mx-auto space-y-5 p-4">
       <div className="flex items-center justify-between">
         <h1 className="font-semibold text-xl">Products</h1>
-        <Link
-          className={buttonVariants({ variant: "default" })}
-          to="/products/add-new"
-        >
-          Add Product
-        </Link>
+        <div className="flex items-center justify-center gap-8">
+          {/* Search Bar */}
+          <Input
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearch(value);
+
+              table.refineCore.setFilters([
+                {
+                  field: "title",
+                  value: value,
+                  operator: "contains",
+                },
+              ]);
+            }}
+            className="w-60"
+          />
+          <Link
+            className={buttonVariants({
+              variant: "default",
+            })}
+            to="/products/add-new"
+          >
+            Add Product
+          </Link>
+        </div>
       </div>
       <div>
         <ListView>
