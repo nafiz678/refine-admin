@@ -64,12 +64,12 @@ const Products = () => {
         header: "Title",
         enableSorting: false,
         cell: ({ row }) => {
-          const images = row.original.images;
-          if (!images) return;
+          const thumbnail = row.original.thumbnail;
+          if (!thumbnail) return;
           const SUPABASE_URL = import.meta.env
             .VITE_SUPABASE_URL;
 
-          const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/${images[0]}`;
+          const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/${thumbnail}`;
 
           return (
             <div className="flex items-center gap-4 w-full">
@@ -93,13 +93,13 @@ const Products = () => {
           );
         },
         size: 400,
-        meta: { disableSortBy: true }
+        meta: { disableSortBy: true },
       }),
       columnHelper.accessor("department", {
         header: "Department",
         cell: ({ row }) => row.original.department,
         size: 100,
-        meta: { disableSortBy: true }
+        meta: { disableSortBy: true },
       }),
       columnHelper.accessor("createdAt", {
         header: "Created At",
@@ -128,7 +128,7 @@ const Products = () => {
           );
         },
         size: 80,
-        meta: { disableSortBy: true }
+        meta: { disableSortBy: true },
       }),
       columnHelper.display({
         id: "actions",
