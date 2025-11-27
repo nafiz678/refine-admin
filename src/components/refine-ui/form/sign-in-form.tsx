@@ -20,11 +20,14 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useLink, useLogin, useRefineOptions } from "@refinedev/core";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export const SignInForm = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate()
 
   const Link = useLink();
 
@@ -38,6 +41,11 @@ export const SignInForm = () => {
     login({
       email,
       password,
+    }, {
+      onSuccess: ()=> {
+        toast.success("User logged in successfully")
+        navigate("/")
+      }
     });
   };
 

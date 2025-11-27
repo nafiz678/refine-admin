@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AuthProvider } from "@refinedev/core";
-import { supabaseClient, supabaseAdmin } from "../supabaseClient";
+import { supabaseClient } from "../supabaseClient";
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
@@ -40,7 +40,7 @@ export const authProvider: AuthProvider = {
   },
   register: async ({ email, password }) => {
     try {
-      const { data, error } = await supabaseAdmin.auth.signUp({
+      const { data, error } = await supabaseClient.auth.signUp({
         email,
         password,
       });
@@ -74,7 +74,7 @@ export const authProvider: AuthProvider = {
   },
   forgotPassword: async ({ email }) => {
     try {
-      const { data, error } = await supabaseAdmin.auth.resetPasswordForEmail(
+      const { data, error } = await supabaseClient.auth.resetPasswordForEmail(
         email,
         {
           redirectTo: `${window.location.origin}/update-password`,
@@ -110,7 +110,7 @@ export const authProvider: AuthProvider = {
   },
   updatePassword: async ({ password }) => {
     try {
-      const { data, error } = await supabaseAdmin.auth.updateUser({
+      const { data, error } = await supabaseClient.auth.updateUser({
         password,
       });
 

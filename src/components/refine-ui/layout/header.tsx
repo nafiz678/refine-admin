@@ -6,10 +6,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import {
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
-  useActiveAuthProvider,
+  useGetIdentity,
   useLogout,
   useRefineOptions,
 } from "@refinedev/core";
@@ -18,30 +21,20 @@ import { LogOutIcon } from "lucide-react";
 export const Header = () => {
   const { isMobile } = useSidebar();
 
-  return <>{isMobile ? <MobileHeader /> : <DesktopHeader />}</>;
+  return (
+    <>{isMobile ? <MobileHeader /> : <DesktopHeader />}</>
+  );
 };
 
 function DesktopHeader() {
   return (
     <header
       className={cn(
-        "sticky",
-        "top-0",
-        "flex",
-        "h-16",
-        "shrink-0",
-        "items-center",
-        "gap-4",
-        "border-b",
-        "border-border",
-        "bg-sidebar",
-        "pr-3",
-        "justify-end",
-        "z-40"
+        "sticky top-0 flex h-16 shrink-0 items-center gap-4 border-b border-border bg-sidebar pr-3 justify-end z-40"
       )}
     >
       <ThemeToggle />
-      <UserDropdown />
+      <UserSection />
     </header>
   );
 }
@@ -70,12 +63,17 @@ function MobileHeader() {
       )}
     >
       <SidebarTrigger
-        className={cn("text-muted-foreground", "rotate-180", "ml-1", {
-          "opacity-0": open,
-          "opacity-100": !open || isMobile,
-          "pointer-events-auto": !open || isMobile,
-          "pointer-events-none": open && !isMobile,
-        })}
+        className={cn(
+          "text-muted-foreground",
+          "rotate-180",
+          "ml-1",
+          {
+            "opacity-0": open,
+            "opacity-100": !open || isMobile,
+            "pointer-events-auto": !open || isMobile,
+            "pointer-events-none": open && !isMobile,
+          }
+        )}
       />
 
       <div
@@ -112,40 +110,70 @@ function MobileHeader() {
         </h2>
       </div>
 
-      <ThemeToggle className={cn("h-8", "w-8")} />
+      <div className="flex items-center gap-2">
+        <ThemeToggle className={cn("h-8 w-8")} />
+        <UserSection />
+      </div>
     </header>
   );
 }
 
-const UserDropdown = () => {
-  const { mutate: logout, isPending: isLoggingOut } = useLogout();
+const UserSection = () => {
+  const authProvider = useGetIdentity();
+  const { mutate: logout, isPending: isLoggingOut } =
+    useLogout();
 
-  const authProvider = useActiveAuthProvider();
 
-  if (!authProvider?.getIdentity) {
-    return null;
+  const isLoggedIn = !!authProvider.data;
+  console.log(isLoggedIn)
+
+  if (isLoggedIn) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger>
+          <UserAvatar />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            onClick={() => {
+              logout();
+            }}
+          >
+            <LogOutIcon
+              className={cn(
+                "text-destructive",
+                "hover:text-destructive"
+              )}
+            />
+            <span
+              className={cn(
+                "text-destructive",
+                "hover:text-destructive"
+              )}
+            >
+              {isLoggingOut ? "Logging out..." : "Logout"}
+            </span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <UserAvatar />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={() => {
-            logout();
-          }}
-        >
-          <LogOutIcon
-            className={cn("text-destructive", "hover:text-destructive")}
-          />
-          <span className={cn("text-destructive", "hover:text-destructive")}>
-            {isLoggingOut ? "Logging out..." : "Logout"}
-          </span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex gap-2">
+      <button
+        className="px-3 py-1 rounded bg-primary text-white hover:bg-primary/80"
+        onClick={() => (window.location.href = "/login")}
+      >
+        Login
+      </button>
+      <button
+        className="px-3 py-1 rounded border border-border hover:bg-muted"
+        onClick={() => (window.location.href = "/register")}
+      >
+        Register
+      </button>
+    </div>
   );
 };
 

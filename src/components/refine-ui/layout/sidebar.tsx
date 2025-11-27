@@ -24,7 +24,6 @@ import { cn } from "@/lib/utils";
 import {
   useLink,
   useMenu,
-  useRefineOptions,
   type TreeMenuItem,
 } from "@refinedev/core";
 import { ChevronRight, ListIcon } from "lucide-react";
@@ -272,7 +271,6 @@ function SidebarItemLink({
 }
 
 function SidebarHeader() {
-  const { title } = useRefineOptions();
   const { open, isMobile } = useShadcnSidebar();
 
   return (
@@ -305,11 +303,17 @@ function SidebarHeader() {
           }
         )}
       >
-        <div>{title.icon}</div>
+        <div className="w-full">
+          <img
+            src="/logo-dark.webp"
+            alt="logo"
+            className="w-40 h-full"
+          />
+        </div>
         <h2
           className={cn(
             "text-sm",
-            "font-bold",
+            "font-semibold",
             "transition-opacity",
             "duration-200",
             {
