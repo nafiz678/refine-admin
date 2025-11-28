@@ -31,6 +31,7 @@ export const SignInForm = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const Link = useLink();
@@ -44,31 +45,56 @@ export const SignInForm = () => {
   ) => {
     e.preventDefault();
 
-    login(
-      {
-        email,
-        password,
-      },
-      {
-        onSuccess: () => {
-          toast.success("User logged in successfully");
-          navigate("/");
+    if (!email.trim() || !password) {
+      toast.error("Please enter email and password");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      login(
+        {
+          email: email.trim(),
+          password,
         },
-      }
-    );
+        {
+          onSuccess: () => {
+            toast.success("Logged in successfully");
+            navigate("/");
+          },
+          onError: (error) => {
+            toast.error(error?.message || "Login failed");
+          },
+        }
+      );
+    } catch (err) {
+      toast.error("Something went wrong. Try again." + err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSignInWithGoogle = () => {
-    login({
-      providerName: "google",
-    });
+const handleProviderLogin = (providerName: "google" | "github") => {
+    if (isLoading) return;
+
+    try {
+      setIsLoading(true);
+      login(
+        { providerName },
+        {
+          onError: (error) => {
+            toast.error(error?.message || "Provider login failed");
+            setIsLoading(false);
+          },
+        }
+      );
+    } catch {
+      toast.error("Something went wrong");
+      setIsLoading(false);
+    }
   };
 
-  const handleSignInWithGitHub = () => {
-    login({
-      providerName: "github",
-    });
-  };
 
   return (
     <div
@@ -255,7 +281,7 @@ export const SignInForm = () => {
                     "items-center",
                     "gap-2"
                   )}
-                  onClick={handleSignInWithGoogle}
+                  onClick={()=>handleProviderLogin("google")}
                   type="button"
                 >
                   <svg
@@ -280,7 +306,7 @@ export const SignInForm = () => {
                     "items-center",
                     "gap-2"
                   )}
-                  onClick={handleSignInWithGitHub}
+                  onClick={()=>handleProviderLogin("github")}
                   type="button"
                 >
                   <svg

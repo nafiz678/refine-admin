@@ -24,12 +24,14 @@ import {
 } from "@refinedev/core";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
+import { Loader2 } from "lucide-react";
 
 export const SignUpForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] =
     useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const { open } = useNotification();
@@ -52,19 +54,33 @@ export const SignUpForm = () => {
         description:
           "Please make sure both password fields contain the same value.",
       });
-
       return;
     }
-
-    register({
-      email,
-      password,
-    },{
-      onSuccess: ()=> {
-        toast.success("User Signup in successfully")
-        navigate("/")
-      }
-    });
+    setIsLoading(true);
+    try {
+      register(
+        { email, password },
+        {
+          onSuccess: () => {
+            toast.success("User signed up successfully");
+            navigate("/");
+          },
+          onError: (error) => {
+            toast.error(
+              error?.message ||
+                "Signup failed. Please try again."
+            );
+          },
+        }
+      );
+    } catch (error) {
+      toast.error(
+        "Unexpected error occurred during signup."
+      );
+      console.error("Signup error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
   return (
     <div
@@ -184,15 +200,17 @@ export const SignUpForm = () => {
             <Button
               type="submit"
               size="lg"
-              className={cn(
-                "w-full",
-                "mt-6",
-                "bg-green-600",
-                "hover:bg-green-700",
-                "text-white"
-              )}
+              disabled={isLoading}
+              className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white"
             >
-              Sign up
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Creating account...
+                </span>
+              ) : (
+                "Sign up"
+              )}
             </Button>
           </form>
         </CardContent>
