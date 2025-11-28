@@ -158,6 +158,7 @@ const BannerForm = ({
         if (error) throw error;
 
         toast.success("Banner updated!");
+        refetchBanners?.();
       } else {
         const { error } = await supabaseClient
           .schema("content")
@@ -168,6 +169,7 @@ const BannerForm = ({
 
         if (error) throw error;
         toast.success("Banner created!");
+        refetchBanners?.();
       }
 
       await refetchBanners?.();
@@ -266,7 +268,9 @@ const BannerForm = ({
               {form.watch("images").map((img, idx) => (
                 <div key={idx} className="relative">
                   <img
-                    src={img}
+                    src={`${
+                      import.meta.env.VITE_SUPABASE_URL
+                    }/storage/v1/object/public/${img}`}
                     className="aspect-video h-28 w-full rounded-md object-cover"
                   />
                   <Button
