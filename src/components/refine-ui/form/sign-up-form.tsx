@@ -22,12 +22,15 @@ import {
   useRefineOptions,
   useRegister,
 } from "@refinedev/core";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 export const SignUpForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] =
     useState("");
+  const navigate = useNavigate();
 
   const { open } = useNotification();
 
@@ -56,6 +59,11 @@ export const SignUpForm = () => {
     register({
       email,
       password,
+    },{
+      onSuccess: ()=> {
+        toast.success("User Signup in successfully")
+        navigate("/")
+      }
     });
   };
   return (
