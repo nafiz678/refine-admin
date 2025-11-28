@@ -305,7 +305,7 @@ export function VariantsCard({
           {groups.map((group) => (
             <Card key={group.id} className="p-4">
               <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4 w-full">
+                <div className="flex items-start flex-col lg:flex-row gap-4 w-full">
                   {/* Image + color name */}
                   <div className="flex flex-col items-center gap-2 w-44">
                     <div className="w-28 h-28 rounded-md border flex items-center justify-center overflow-hidden bg-muted">
@@ -362,7 +362,7 @@ export function VariantsCard({
                   </div>
 
                   <div className="w-full">
-                    <div className="flex gap-4 items-center mb-2">
+                    <div className="flex gap-4 items-center mb-2 flex-wrap">
                       <FormItem className="flex-1">
                         <FormLabel>Color name</FormLabel>
                         <FormControl>
@@ -403,7 +403,7 @@ export function VariantsCard({
                       {group.sizes.map((s) => (
                         <div
                           key={s.id}
-                          className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end border rounded p-3"
+                          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 items-end border rounded p-3"
                         >
                           <FormItem className="md:col-span-1">
                             <FormLabel>Size</FormLabel>
