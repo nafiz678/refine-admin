@@ -29,7 +29,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { EllipsisVertical, Trash2 } from "lucide-react";
+import { EllipsisVertical, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabaseClient } from "@/lib";
@@ -278,9 +278,9 @@ const Products = () => {
 
   return (
     <section className="container mx-auto space-y-5 p-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <h1 className="font-semibold text-xl">Products</h1>
-        <div className="flex items-center justify-center gap-8">
+        <div className="flex items-center justify-center lg:gap-8 gap-2">
           {/* Search Bar */}
           <Input
             placeholder="Search products..."
@@ -297,7 +297,7 @@ const Products = () => {
                 },
               ]);
             }}
-            className="w-60"
+            className="lg:w-60"
           />
           {/* <Button
             className="cursor-pointer border"
@@ -315,7 +315,8 @@ const Products = () => {
             })}
             to="/products/add-new"
           >
-            Add Product
+            <span className="hidden md:block">Add Product</span>
+            <Plus/>
           </Link>
         </div>
       </div>
