@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,7 +8,10 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { useGetIdentity } from "@refinedev/core";
 import { toast } from "sonner";
-import { productSchema, VariantFormData } from "@/lib/type";
+import {
+  DBVariantFormData,
+  productSchema,
+} from "@/lib/type";
 import {
   uploadImages,
   uploadThumbnail,
@@ -19,8 +22,12 @@ import { ProductProp } from "./edit/edit-products";
 import { BasicInfoCard } from "./form-element/basic-card-info";
 import { ClassificationCard } from "./form-element/classification-card";
 import { MediaCard } from "./form-element/media-card";
-import { VariantsCard } from "./form-element/variants-card";
+import {
+  ColorGroup,
+  VariantsCard,
+} from "./form-element/variants-card";
 import { SEOCard } from "./form-element/seo-card";
+import { useQuery } from "@tanstack/react-query";
 
 export type ProductFormData = z.infer<typeof productSchema>;
 
@@ -33,7 +40,7 @@ export function ProductForm({
 }: ProductForm) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [variantFields, setVariantFields] = useState<
-    VariantFormData[]
+    ColorGroup[]
   >([]);
   const editingMode: boolean = !!existingProduct;
   const { data: identity } = useGetIdentity();
@@ -60,6 +67,51 @@ export function ProductForm({
     },
   });
 
+  const {
+    data: existingVariants,
+    refetch: existingRefetch,
+  } = useQuery({
+    queryKey: ["variants", existingProduct?.id],
+    queryFn: async () => {
+      if (!existingProduct?.id) return [];
+      const { data } = await supabaseClient
+        .from("productVariant")
+        .select("*")
+        .eq("productId", existingProduct.id);
+      return data || [];
+    },
+    enabled: !!existingProduct?.id,
+  });
+
+  useEffect(() => {
+    if (!existingVariants) return;
+
+    const grouped: Record<string, ColorGroup> = {};
+
+    existingVariants.forEach((v) => {
+      if (!grouped[v.color]) {
+        grouped[v.color] = {
+          colorName: v.color,
+          image: v.image ?? undefined,
+          sizes: [],
+          id: v.id,
+        };
+      }
+
+      grouped[v.color].sizes.push({
+        size: v.size,
+        stockQty: v.stockQty,
+        price: v.price,
+        discountPrice: v.discountPrice ?? null,
+        status: v.status,
+        expiresAt: v.expiresAt?.split("T")[0] ?? undefined,
+        id: v.id,
+      });
+    });
+
+    setVariantFields(Object.values(grouped));
+  }, [existingVariants]);
+
   const onSubmit = async (values: ProductFormData) => {
     if (!identity)
       return toast.error("User not authenticated");
@@ -67,6 +119,7 @@ export function ProductForm({
 
     try {
       const timestamp = new Date().toISOString();
+      let productId = existingProduct?.id ?? "";
       // Upload thumbnail
       let finalThumbnail = existingProduct?.thumbnail ?? "";
       if (
@@ -79,41 +132,31 @@ export function ProductForm({
         finalThumbnail = `product/${uploadedThumbnail}`;
       }
 
-      // Upload new images
-      const uploadedImages: string[] = [];
-      const existingImages =
-        (values.images?.filter(
-          (img) => typeof img === "string"
-        ) as string[]) ?? [];
-      const newFiles =
-        (values.images?.filter(
-          (img) => img instanceof File
-        ) as File[]) ?? [];
-
-      if (newFiles.length > 0) {
-        const newUploads = await uploadImages(newFiles);
-        uploadedImages.push(
-          ...newUploads.map((f) => `product/${f}`)
-        );
-      }
-
+      // Upload images
+      const existingImages = values.images?.filter(
+        (i) => typeof i === "string"
+      ) as string[];
+      const newFiles = values.images?.filter(
+        (i) => i instanceof File
+      ) as File[];
+      const uploadedImages =
+        newFiles.length > 0
+          ? await uploadImages(newFiles)
+          : [];
       const finalImages = [
         ...existingImages,
-        ...uploadedImages,
+        ...uploadedImages.map((f) => `product/${f}`),
       ];
 
-      // Insert or update product
+      // Upsert product
       const productData = {
         ...values,
         thumbnail: finalThumbnail,
         images: finalImages,
         updatedAt: timestamp,
-        authorId: existingProduct
-          ? existingProduct.authorId
-          : identity.id,
+        authorId: existingProduct?.authorId ?? identity.id,
       };
-
-      let productId: string;
+      console.log(productData);
 
       if (!existingProduct) {
         const { data: newProduct, error } =
@@ -137,88 +180,65 @@ export function ProductForm({
       }
 
       // Handle variants
-      // Fetch existing variants if editing
-      const existingVariants = existingProduct
-        ? (
-            await supabaseClient
-              .from("productVariant")
-              .select("*")
-              .eq("productId", productId)
-          ).data ?? []
-        : [];
-
-      const existingVariantIds = existingVariants.map(
-        (v) => v.id
+      const dbVariantsNested = await Promise.all(
+        variantFields.map((v) =>
+          mapVariantForDB(v, productId, timestamp)
+        )
       );
-      const updatedVariantIds = variantFields
-        .filter((v) => v.id)
-        .map((v) => v.id!);
+      const dbVariants = dbVariantsNested.flat();
+      console.log(dbVariants);
 
-      // Delete removed variants
-      const toDelete = existingVariantIds.filter(
-        (id) => !updatedVariantIds.includes(id)
-      );
-      if (toDelete.length > 0) {
-        const { error } = await supabaseClient
-          .from("productVariant")
-          .delete()
-          .in("id", toDelete);
-        if (error) throw error;
+      // Remove old variants
+      if (editingMode) {
+        const existingVariantIds = (
+          existingVariants ?? []
+        ).map((v) => v.id);
+        const updatedVariantIds = variantFields.map(
+          (v) => v.id!
+        );
+        const toDelete = existingVariantIds.filter(
+          (id) => !updatedVariantIds.includes(id)
+        );
+        if (toDelete.length > 0) {
+          const { error } = await supabaseClient
+            .from("productVariant")
+            .delete()
+            .in("id", toDelete);
+          if (error) throw error;
+        }
       }
 
-      // Insert or update variants
-      if (variantFields.length > 0) {
-        const variantPromises = variantFields.map(
-          async (variant) => {
-            const imageUrl =
-              variant.image instanceof File
-                ? await uploadVariantImage(variant.image)
-                : variant.image;
-
-            const finalVariant = {
-              ...variant,
-              productId,
-              image: imageUrl
-                ? `product/${imageUrl}`
-                : undefined,
-              updatedAt: timestamp,
-            };
-
-            if (
-              existingVariants.find(
-                (v) => v.id === variant.id
-              )
-            ) {
-              // Update existing variant
-              const { data, error } = await supabaseClient
-                .from("productVariant")
-                .update(finalVariant)
-                .eq("id", variant.id);
-              if (error) throw error;
-              console.log("Updating variant", data);
-            } else {
-              // Insert new variant
-              const { data, error } = await supabaseClient
-                .from("productVariant")
-                .insert({
-                  ...finalVariant,
-                  createdAt: timestamp,
-                });
-              if (error) throw error;
-              console.log("Inserting variant", data);
-            }
-          }
-        );
-        await Promise.all(variantPromises);
+      /** Insert or update variants */
+      for (const variant of dbVariants) {
+        const { data: existingVariant } =
+          await supabaseClient
+            .from("productVariant")
+            .select("*")
+            .eq("id", variant.id)
+            .maybeSingle();
+            
+        if (existingVariant) {
+          const { error } = await supabaseClient
+            .from("productVariant")
+            .update(variant)
+            .eq("id", variant.id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabaseClient
+            .from("productVariant")
+            .insert(variant);
+          if (error) throw error;
+        }
       }
 
       toast.success(
-        existingProduct
+        editingMode
           ? "Product updated successfully!"
           : "Product created successfully!"
       );
       form.reset();
       setVariantFields([]);
+      existingRefetch();
       navigate("/products");
     } catch (err) {
       toast.error(
@@ -233,11 +253,7 @@ export function ProductForm({
     }
   };
 
-  return existingProduct ? (
-    <div className="flex items-center justify-center">
-      Fixing some ui changes
-    </div>
-  ) : (
+  return (
     <div className="mx-auto max-w-6xl w-full px-4 py-8">
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
@@ -280,8 +296,8 @@ export function ProductForm({
 
           {/* VARIANTS CARD */}
           <VariantsCard
-            setVariantFields={setVariantFields}
-            variantFields={variantFields}
+            onChange={setVariantFields}
+            value={variantFields}
           />
 
           {/* SEO */}
@@ -326,4 +342,45 @@ export function ProductForm({
       </Form>
     </div>
   );
+}
+
+async function mapVariantForDB(
+  variant: ColorGroup,
+  productId: string,
+  timestamp: string
+): Promise<DBVariantFormData[]> {
+  let imageUrl: string | null = null;
+
+  if (variant.image instanceof File) {
+    try {
+      const uploadedPath = await uploadVariantImage(
+        variant.image
+      );
+      imageUrl = `product/${uploadedPath}`;
+    } catch (err) {
+      toast.error("Variant image upload failed:" + err);
+      toast.error(
+        `Failed to upload image for color ${variant.colorName}`
+      );
+    }
+  } else if (typeof variant.image === "string") {
+    imageUrl = variant.image;
+  }
+
+  return variant.sizes.map((s) => ({
+    id: s.id ?? crypto.randomUUID(),
+    productId,
+    color: variant.colorName,
+    size: s.size,
+    stockQty: Number(s.stockQty),
+    price: Number(s.price),
+    discountPrice: Number(s.discountPrice) || null,
+    status: s.status,
+    expiresAt: s.expiresAt
+      ? `${s.expiresAt} 00:00:00`
+      : null,
+    image: imageUrl,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }));
 }

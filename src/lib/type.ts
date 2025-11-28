@@ -1,4 +1,5 @@
 import z from "zod";
+import { Database } from "./supabase";
 
 export const productSchema = z.object({
   title: z
@@ -35,19 +36,21 @@ export const productSchema = z.object({
   updatedAt: z.string().optional(),
 });
 
-export type VariantFormData = {
-  size: "XS" | "S" | "M" | "L" | "XL" | "XXL" | "ONE_SIZE";
-  color: string;
-  stockQty: number;
-  status:
-  | "IN_STOCK"
-  | "LOW_STOCK"
-  | "OUT_OF_STOCK"
-  | "DISCONTINUED"
-  | "COMING_SOON";
-  price: number;
-  discountPrice?: number;
-  expiresAt?: string;
-  image?: File | undefined;
-  id: string;
-};
+export type DBVariantFormData = Database["public"]["Tables"]["productVariant"]["Row"]
+
+// export type VariantFormData = {
+//   size: "XS" | "S" | "M" | "L" | "XL" | "XXL" | "ONE_SIZE";
+//   color: string;
+//   stockQty: number;
+//   status:
+//   | "IN_STOCK"
+//   | "LOW_STOCK"
+//   | "OUT_OF_STOCK"
+//   | "DISCONTINUED"
+//   | "COMING_SOON";
+//   price: number;
+//   discountPrice?: number | null;
+//   expiresAt?: string;
+//   image?: File | string | null;
+//   id: string;
+// };

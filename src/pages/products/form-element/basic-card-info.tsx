@@ -115,8 +115,7 @@ export const BasicInfoCard: FC<BasicInfoCardProps> = ({
                 <Editor
                   key={theme}
                   apiKey={import.meta.env.VITE_TINYMCE_KEY}
-                  initialValue="Write a detailed product description… Highlight features, materials, sizing, care instructions, and benefits."
-                  value={field.value}
+                  value={field.value ?? ""}
                   onEditorChange={field.onChange}
                   init={{
                     height: 300,
