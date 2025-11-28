@@ -166,7 +166,7 @@ export function VariantsCard({
                   <Input
                     type="number"
                     placeholder="0"
-                    min={0}
+                    // min={0}
                     value={
                       variant.stockQty === 0
                         ? ""
@@ -222,7 +222,7 @@ export function VariantsCard({
                 <FormControl>
                   <Input
                     type="number"
-                    min={0}
+                    // min={0}
                     placeholder="0"
                     value={
                       variant.price === 0
@@ -246,7 +246,7 @@ export function VariantsCard({
                   <Input
                     type="number"
                     placeholder="0"
-                    min={0}
+                    // min={0}
                     value={variant.discountPrice}
                     onChange={(e) =>
                       updateVariant(variant.id!, {
