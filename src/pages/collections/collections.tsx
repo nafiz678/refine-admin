@@ -160,7 +160,7 @@ export default function Collections() {
         .from("collection")
         .update({
           ...values,
-          thumbnail: `content/${finalThumbnail}`,
+          thumbnail: `${finalThumbnail}`,
           updatedAt: new Date().toISOString(),
         })
         .eq("id", id);
@@ -173,7 +173,7 @@ export default function Collections() {
       }
       console.log({
         ...values,
-        thumbnail: `content/${finalThumbnail}`,
+        thumbnail: finalThumbnail,
         updatedAt: new Date().toISOString(),
       });
 
