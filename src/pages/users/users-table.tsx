@@ -94,19 +94,18 @@ const UsersTable = ({
       cell: ({ row }) => (
         <div className="flex flex-col">
           <div className="flex flex-row items-center gap-4">
-            {/** biome-ignore lint/performance/noImgElement: <explanation> */}
             <img
-              alt={row.original.email}
+              alt={row.original.user_metadata.name}
               className="size-12 rounded object-cover"
               height={48}
               loading="lazy"
-              src={"/placeholder.svg"}
+              src={row.original.user_metadata.picture || "/placeholder.svg"}
               width={48}
             />
 
             <div>
               <p className="truncate text-base">
-                {row.original.id}
+                {row.original.user_metadata.name ?? "User Name"}
               </p>
             </div>
           </div>
