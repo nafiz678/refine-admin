@@ -40,7 +40,7 @@ export const SignUpForm = () => {
 
   const { title } = useRefineOptions();
 
-  const { mutate: register } = useRegister();
+  const { mutateAsync: register } = useRegister();
 
   const handleSignUp = async (
     e: React.FormEvent<HTMLFormElement>
@@ -58,21 +58,28 @@ export const SignUpForm = () => {
     }
     setIsLoading(true);
     try {
-      register(
-        { email, password },
-        {
-          onSuccess: () => {
-            toast.success("User signed up successfully");
-            navigate("/");
-          },
-          onError: (error) => {
-            toast.error(
-              error?.message ||
-                "Signup failed. Please try again."
-            );
-          },
-        }
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res: any = await register({
+        email: email.trim(),
+        password,
+      });
+
+      console.log("REGISTER RESPONSE:", res);
+
+      // Supabase error format
+      if (res?.error) {
+        toast.error(res.error.message || "Signup failed");
+        return;
+      }
+
+      if (res?.status >= 400) {
+        toast.error(res?.error?.message || "Signup failed");
+        return;
+      }
+
+      // success
+      toast.success("User signed up successfully");
+      navigate("/");
     } catch (error) {
       toast.error(
         "Unexpected error occurred during signup."

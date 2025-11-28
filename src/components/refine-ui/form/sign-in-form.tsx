@@ -38,7 +38,7 @@ export const SignInForm = () => {
 
   const { title } = useRefineOptions();
 
-  const { mutate: login } = useLogin();
+  const { mutateAsync: login } = useLogin();
 
   const handleSignIn = async (
     e: React.FormEvent<HTMLFormElement>
@@ -49,25 +49,23 @@ export const SignInForm = () => {
       toast.error("Please enter email and password");
       return;
     }
+    setIsLoading(true);
 
     try {
-      setIsLoading(true);
 
-      login(
-        {
-          email: email.trim(),
-          password,
-        },
-        {
-          onSuccess: () => {
-            toast.success("Logged in successfully");
-            navigate("/");
-          },
-          onError: (error) => {
-            toast.error(error?.message || "Login failed");
-          },
-        }
-      );
+      const res = await login({
+        email: email.trim(),
+        password,
+      });
+
+      // If refine login provider returns an error shape
+      if (res?.error) {
+        toast.error(res.error.message || "Login failed");
+        return;
+      }
+
+      toast.success("Logged in successfully");
+      navigate("/");
     } catch (err) {
       toast.error("Something went wrong. Try again." + err);
     } finally {
@@ -75,7 +73,9 @@ export const SignInForm = () => {
     }
   };
 
-const handleProviderLogin = (providerName: "google" | "github") => {
+  const handleProviderLogin = (
+    providerName: "google" | "github"
+  ) => {
     if (isLoading) return;
 
     try {
@@ -84,7 +84,9 @@ const handleProviderLogin = (providerName: "google" | "github") => {
         { providerName },
         {
           onError: (error) => {
-            toast.error(error?.message || "Provider login failed");
+            toast.error(
+              error?.message || "Provider login failed"
+            );
             setIsLoading(false);
           },
         }
@@ -94,7 +96,6 @@ const handleProviderLogin = (providerName: "google" | "github") => {
       setIsLoading(false);
     }
   };
-
 
   return (
     <div
@@ -281,7 +282,9 @@ const handleProviderLogin = (providerName: "google" | "github") => {
                     "items-center",
                     "gap-2"
                   )}
-                  onClick={()=>handleProviderLogin("google")}
+                  onClick={() =>
+                    handleProviderLogin("google")
+                  }
                   type="button"
                 >
                   <svg
@@ -306,7 +309,9 @@ const handleProviderLogin = (providerName: "google" | "github") => {
                     "items-center",
                     "gap-2"
                   )}
-                  onClick={()=>handleProviderLogin("github")}
+                  onClick={() =>
+                    handleProviderLogin("github")
+                  }
                   type="button"
                 >
                   <svg
