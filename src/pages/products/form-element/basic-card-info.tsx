@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { ProductFormData } from "../../product-form";
 import { useTheme } from "@/components/refine-ui/theme/theme-provider";
+import { ProductFormData } from "../product-form";
 
 interface BasicInfoCardProps {
   form: UseFormReturn<ProductFormData>;

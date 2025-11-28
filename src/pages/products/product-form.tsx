@@ -9,11 +9,6 @@ import { Link, useNavigate } from "react-router";
 import { useGetIdentity } from "@refinedev/core";
 import { toast } from "sonner";
 import { productSchema, VariantFormData } from "@/lib/type";
-import { BasicInfoCard } from "./add/form-element/basic-card-info";
-import { ClassificationCard } from "./add/form-element/classification-card";
-import { MediaCard } from "./add/form-element/media-card";
-import { VariantsCard } from "./add/form-element/variants-card";
-import { SEOCard } from "./add/form-element/seo-card";
 import {
   uploadImages,
   uploadThumbnail,
@@ -21,6 +16,11 @@ import {
 } from "./upload-image";
 import { supabaseClient } from "@/lib";
 import { ProductProp } from "./edit/edit-products";
+import { BasicInfoCard } from "./form-element/basic-card-info";
+import { ClassificationCard } from "./form-element/classification-card";
+import { MediaCard } from "./form-element/media-card";
+import { VariantsCard } from "./form-element/variants-card";
+import { SEOCard } from "./form-element/seo-card";
 
 export type ProductFormData = z.infer<typeof productSchema>;
 

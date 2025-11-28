@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/card";
 import { supabaseClient } from "@/lib";
 import { useQuery } from "@tanstack/react-query";
-import { ProductFormData } from "../../product-form";
+import { ProductFormData } from "../product-form";
 
 interface ClassificationCardProps {
   form: UseFormReturn<ProductFormData>;

@@ -58,7 +58,7 @@ export function VariantsCard({
         stockQty: 0,
         status: "IN_STOCK",
         price: 0,
-        discountPrice: 0,
+        discountPrice: undefined,
         expiresAt: "",
         image: undefined,
       },
@@ -82,11 +82,16 @@ export function VariantsCard({
     );
   };
 
-  const handleImageChange = (id: string, file: File | null) => {
+  const handleImageChange = (
+    id: string,
+    file: File | null
+  ) => {
     if (!file) return;
     const MAX_SIZE = 2 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
-      toast.error("File is too large. Maximum size allowed is 2MB.");
+      toast.error(
+        "File is too large. Maximum size allowed is 2MB."
+      );
       return;
     }
     updateVariant(id, { image: file });
@@ -97,7 +102,8 @@ export function VariantsCard({
       <CardHeader>
         <CardTitle>Product Variants</CardTitle>
         <CardDescription>
-          Add different sizes, colors, pricing, and images for this product.
+          Add different sizes, colors, pricing, and images
+          for this product.
         </CardDescription>
       </CardHeader>
 
@@ -111,15 +117,27 @@ export function VariantsCard({
                 <Select
                   value={variant.size}
                   onValueChange={(val) =>
-                    updateVariant(variant.id!, { size: val as VariantFormData["size"] })
+                    updateVariant(variant.id!, {
+                      size: val as VariantFormData["size"],
+                    })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {["XS","S","M","L","XL","XXL","ONE_SIZE"].map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    {[
+                      "XS",
+                      "S",
+                      "M",
+                      "L",
+                      "XL",
+                      "XXL",
+                      "ONE_SIZE",
+                    ].map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -131,7 +149,11 @@ export function VariantsCard({
                 <FormControl>
                   <Input
                     value={variant.color}
-                    onChange={(e) => updateVariant(variant.id!, { color: e.target.value })}
+                    onChange={(e) =>
+                      updateVariant(variant.id!, {
+                        color: e.target.value,
+                      })
+                    }
                     placeholder="e.g., Red"
                   />
                 </FormControl>
@@ -143,9 +165,20 @@ export function VariantsCard({
                 <FormControl>
                   <Input
                     type="number"
+                    placeholder="0"
                     min={0}
-                    value={variant.stockQty}
-                    onChange={(e) => updateVariant(variant.id!, { stockQty: Number(e.target.value) })}
+                    value={
+                      variant.stockQty === 0
+                        ? ""
+                        : variant.stockQty
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      updateVariant(variant.id!, {
+                        stockQty:
+                          val === "" ? 0 : Number(val),
+                      });
+                    }}
                   />
                 </FormControl>
               </FormItem>
@@ -157,14 +190,27 @@ export function VariantsCard({
                 <FormLabel>Status</FormLabel>
                 <Select
                   value={variant.status}
-                  onValueChange={(val) => updateVariant(variant.id!, { status: val as VariantFormData["status"] })}
+                  onValueChange={(val) =>
+                    updateVariant(variant.id!, {
+                      status:
+                        val as VariantFormData["status"],
+                    })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {["IN_STOCK","LOW_STOCK","OUT_OF_STOCK","DISCONTINUED","COMING_SOON"].map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    {[
+                      "IN_STOCK",
+                      "LOW_STOCK",
+                      "OUT_OF_STOCK",
+                      "DISCONTINUED",
+                      "COMING_SOON",
+                    ].map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -177,8 +223,18 @@ export function VariantsCard({
                   <Input
                     type="number"
                     min={0}
-                    value={variant.price}
-                    onChange={(e) => updateVariant(variant.id!, { price: Number(e.target.value) })}
+                    placeholder="0"
+                    value={
+                      variant.price === 0
+                        ? ""
+                        : variant.price
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      updateVariant(variant.id!, {
+                        price: val === "" ? 0 : Number(val),
+                      });
+                    }}
                   />
                 </FormControl>
               </FormItem>
@@ -189,9 +245,16 @@ export function VariantsCard({
                 <FormControl>
                   <Input
                     type="number"
+                    placeholder="0"
                     min={0}
                     value={variant.discountPrice}
-                    onChange={(e) => updateVariant(variant.id!, { discountPrice: Number(e.target.value) })}
+                    onChange={(e) =>
+                      updateVariant(variant.id!, {
+                        discountPrice: Number(
+                          e.target.value
+                        ),
+                      })
+                    }
                   />
                 </FormControl>
               </FormItem>
@@ -204,12 +267,23 @@ export function VariantsCard({
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => handleImageChange(variant.id!, e.target.files ? e.target.files[0] : null)}
+                  onChange={(e) =>
+                    handleImageChange(
+                      variant.id!,
+                      e.target.files
+                        ? e.target.files[0]
+                        : null
+                    )
+                  }
                 />
               </FormControl>
               {variant.image && (
                 <img
-                  src={typeof variant.image === "string" ? variant.image : URL.createObjectURL(variant.image)}
+                  src={
+                    typeof variant.image === "string"
+                      ? variant.image
+                      : URL.createObjectURL(variant.image)
+                  }
                   alt="Variant Preview"
                   className="mt-2 h-24 w-24 object-cover rounded"
                 />
@@ -224,19 +298,31 @@ export function VariantsCard({
                   <Input
                     type="date"
                     value={variant.expiresAt}
-                    onChange={(e) => updateVariant(variant.id!, { expiresAt: e.target.value })}
+                    onChange={(e) =>
+                      updateVariant(variant.id!, {
+                        expiresAt: e.target.value,
+                      })
+                    }
                   />
                 </FormControl>
               </FormItem>
 
-              <Button variant="destructive" onClick={() => removeVariant(variant.id!)} size="sm">
+              <Button
+                variant="destructive"
+                onClick={() => removeVariant(variant.id!)}
+                size="sm"
+              >
                 <Trash2 className="w-4 h-4" /> Remove
               </Button>
             </div>
           </Card>
         ))}
 
-        <Button type="button" onClick={addVariant} className="mt-2">
+        <Button
+          type="button"
+          onClick={addVariant}
+          className="mt-2"
+        >
           Add Variant
         </Button>
       </CardContent>

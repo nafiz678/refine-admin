@@ -16,9 +16,9 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { ProductFormData } from "../../product-form";
 import { UseFormReturn } from "react-hook-form";
-import { KeywordsField } from "../keywords-field";
+import { ProductFormData } from "../product-form";
+import { KeywordsField } from "../add/keywords-field";
 
 interface SEOCardProps {
   form: UseFormReturn<ProductFormData>;
