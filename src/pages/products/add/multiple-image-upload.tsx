@@ -93,7 +93,7 @@ export function MultipleImageUploadField({
                 alt={`Product image ${index + 1}`}
                 className="aspect-square rounded-lg border border-border/50 object-cover shadow-sm"
               />
-              <div className="absolute inset-0 bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div className="absolute inset-0 lg:bg-black/40 rounded-lg lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
