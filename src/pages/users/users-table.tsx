@@ -101,6 +101,7 @@ const UsersTable = ({
               loading="lazy"
               src={row.original.user_metadata.picture || "/placeholder.svg"}
               width={48}
+              draggable={false}
             />
 
             <div>
