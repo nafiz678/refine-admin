@@ -298,17 +298,24 @@ function SidebarHeader() {
           "transition-discrete",
           "duration-200",
           {
-            "pl-3": !open,
+            "pl-0": !open,
             "pl-5": open,
           }
         )}
       >
         <div className="w-full">
-          <img
-            src="/logo-dark.webp"
-            alt="logo"
-            className="w-40 h-full"
-          />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 31.42 26.12"
+            xmlSpace="preserve"
+            width={50}
+            height={35}
+          >
+            <path
+              d="M13.72 6.73v16.55l-2.16-1.67V5.07zm-3.08-2.37v16.55l-2.16-1.67V2.7zm6.15 3.55v12.63l-1.08.83-1.08-.83V7.91zm3.08-2.7v16.55l-2.16 1.66V6.87zm3.07-2.37v16.55l-2.15 1.66V4.5z"
+              style={{fill: "#606060"}}
+            />
+          </svg>
         </div>
         <h2
           className={cn(
@@ -317,7 +324,7 @@ function SidebarHeader() {
             "transition-opacity",
             "duration-200",
             {
-              "opacity-0": !open,
+              // "opacity-0": !open,
               "opacity-100": open,
             }
           )}
@@ -327,7 +334,7 @@ function SidebarHeader() {
       </div>
 
       <ShadcnSidebarTrigger
-        className={cn("text-muted-foreground", "mr-1.5", {
+        className={cn("text-muted-foreground transition-opacity duration-300", "mr-1.5 ", {
           "opacity-0": !open,
           "opacity-100": open || isMobile,
           "pointer-events-auto": open || isMobile,

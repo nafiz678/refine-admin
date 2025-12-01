@@ -1,22 +1,26 @@
 import { UserAvatar } from "@/components/refine-ui/layout/user-avatar";
 import { ThemeToggle } from "@/components/refine-ui/theme/theme-toggle";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
   useGetIdentity,
   useLogout,
   useRefineOptions,
 } from "@refinedev/core";
-import { LogOutIcon } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 
 export const Header = () => {
   const { isMobile } = useSidebar();
@@ -27,14 +31,22 @@ export const Header = () => {
 };
 
 function DesktopHeader() {
+  const { open } = useSidebar();
   return (
     <header
       className={cn(
-        "sticky top-0 flex h-16 shrink-0 items-center gap-4 border-b border-border bg-sidebar pr-3 justify-end z-40"
+        "sticky top-0 flex h-16 shrink-0 items-center gap-4 border-b border-border bg-sidebar pr-3 justify-between z-40"
       )}
     >
-      <ThemeToggle />
-      <UserSection />
+      <SidebarTrigger
+        className={`text-muted-foreground transition-opacity duration-300 ${
+          open ? "opacity-0" : "opacity-100"
+        }`}
+      />
+      <div className="flex items-center gap-4 bg-sidebar pr-3 justify-end z-40">
+        <ThemeToggle />
+        <UserSection />
+      </div>
     </header>
   );
 }
@@ -118,40 +130,76 @@ function MobileHeader() {
   );
 }
 
-const UserSection = () => {
+export const UserSection = () => {
   const authProvider = useGetIdentity();
   const { mutate: logout, isPending: isLoggingOut } =
     useLogout();
 
+  const user = authProvider?.data;
+  const isLoggedIn = !!user;
 
-  const isLoggedIn = !!authProvider.data;
+  // While loading identity
+  if (authProvider.isLoading) {
+    return (
+      <div className="flex items-center gap-2">
+        <Skeleton className="w-8 h-8 rounded-full" />
+        <Skeleton className="w-18 h-4" />
+      </div>
+    );
+  }
 
   if (isLoggedIn) {
     return (
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <UserAvatar />
+        <DropdownMenuTrigger className="outline-none">
+          <div className="relative w-10 h-10 cursor-pointer group">
+            {/* Animated gradient border */}
+            <div className="absolute inset-0 rounded-full bg-linear-to-tr from-foreground  to-foreground opacity-60 group-hover:opacity-100 blur-[2px] transition" />
+            <div className="relative">
+              <UserAvatar />
+            </div>
+          </div>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+
+        <DropdownMenuContent
+          align="end"
+          className="w-64 p-3 rounded-xl shadow-xl border bg-card"
+        >
+          {/* Profile header */}
+          <DropdownMenuLabel className="font-normal p-0">
+            <div className="flex items-center gap-3">
+              <UserAvatar/>
+              <div className="flex flex-col">
+                <span className="font-semibold text-sm">
+                  {user.user_metadata?.name || user.email}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {user?.email}
+                </span>
+              </div>
+            </div>
+          </DropdownMenuLabel>
+
+          <DropdownMenuSeparator />
+
+          {/* Profile button */}
           <DropdownMenuItem
-            onClick={() => {
-              logout();
-            }}
+            disabled
+            className="flex items-center gap-2 text-sm opacity-60 cursor-not-allowed"
           >
-            <LogOutIcon
-              className={cn(
-                "text-destructive",
-                "hover:text-destructive"
-              )}
-            />
-            <span
-              className={cn(
-                "text-destructive",
-                "hover:text-destructive"
-              )}
-            >
-              {isLoggingOut ? "Logging out..." : "Logout"}
-            </span>
+            <User className="h-4 w-4" />
+            Profile (coming soon)
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          {/* Logout */}
+          <DropdownMenuItem
+            onClick={() => logout()}
+            className="flex items-center gap-2 text-red-600 focus:text-red-600 font-medium cursor-pointer"
+          >
+            <LogOut className="h-4 w-4" />
+            {isLoggingOut ? "Logging Out..." : "Logout"}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -159,19 +207,22 @@ const UserSection = () => {
   }
 
   return (
-    <div className="flex gap-2">
-      <button
-        className="px-3 py-1 rounded bg-primary text-white hover:bg-primary/80"
+    <div className="flex items-center gap-2">
+      <Button
+        variant="default"
         onClick={() => (window.location.href = "/login")}
+        className="px-4"
       >
         Login
-      </button>
-      <button
-        className="px-3 py-1 rounded border border-border hover:bg-muted"
+      </Button>
+
+      <Button
+        variant="outline"
         onClick={() => (window.location.href = "/register")}
+        className="px-4"
       >
         Register
-      </button>
+      </Button>
     </div>
   );
 };
