@@ -179,55 +179,54 @@ export function ProductForm({
         productId = existingProduct.id;
       }
 
-      // Handle variants
+      // Build DB variants array
       const dbVariantsNested = await Promise.all(
         variantFields.map((v) =>
           mapVariantForDB(v, productId, timestamp)
         )
       );
       const dbVariants = dbVariantsNested.flat();
-      console.log(dbVariants);
 
-      // Remove old variants
+      // If no variants to save, dbVariants might be []
+      console.log("dbVariants", dbVariants);
+
+      const updatedVariantIds = dbVariants.map((v) => v.id);
+
+      // Fetch existing variant IDs once (only if editing)
+      let existingVariantIds: string[] = [];
       if (editingMode) {
-        const existingVariantIds = (
-          existingVariants ?? []
-        ).map((v) => v.id);
-        const updatedVariantIds = variantFields.map(
-          (v) => v.id!
-        );
+        existingVariantIds = (existingVariants ?? [])
+          .map((v) => v.id)
+          .filter(Boolean) as string[];
+      }
+
+      // Perform bulk upsert for all variants (on id)
+      if (dbVariants.length > 0) {
+        // supabase upsert will insert new rows and update existing based on id
+        const { data: upsert, error: upsertError } =
+          await supabaseClient
+            .from("productVariant")
+            .upsert(dbVariants, { onConflict: "id" });
+
+        if (upsertError) throw upsertError;
+        console.log(upsert)
+      }
+
+      // Delete old variants that no longer exist in the updated set
+      if (editingMode && existingVariantIds.length > 0) {
+        // which existing IDs are NOT present in the updated set?
         const toDelete = existingVariantIds.filter(
           (id) => !updatedVariantIds.includes(id)
         );
-        if (toDelete.length > 0) {
-          const { error } = await supabaseClient
-            .from("productVariant")
-            .delete()
-            .in("id", toDelete);
-          if (error) throw error;
-        }
-      }
 
-      /** Insert or update variants */
-      for (const variant of dbVariants) {
-        const { data: existingVariant } =
-          await supabaseClient
-            .from("productVariant")
-            .select("*")
-            .eq("id", variant.id)
-            .maybeSingle();
-            
-        if (existingVariant) {
-          const { error } = await supabaseClient
-            .from("productVariant")
-            .update(variant)
-            .eq("id", variant.id);
-          if (error) throw error;
-        } else {
-          const { error } = await supabaseClient
-            .from("productVariant")
-            .insert(variant);
-          if (error) throw error;
+        if (toDelete.length > 0) {
+          const { error: deleteError } =
+            await supabaseClient
+              .from("productVariant")
+              .delete()
+              .in("id", toDelete);
+
+          if (deleteError) throw deleteError;
         }
       }
 
@@ -363,24 +362,36 @@ async function mapVariantForDB(
         `Failed to upload image for color ${variant.colorName}`
       );
     }
-  } else if (typeof variant.image === "string") {
+  } else if (
+    typeof variant.image === "string" &&
+    variant.image.length > 0
+  ) {
     imageUrl = variant.image;
   }
 
-  return variant.sizes.map((s) => ({
-    id: s.id ?? crypto.randomUUID(),
-    productId,
-    color: variant.colorName,
-    size: s.size,
-    stockQty: Number(s.stockQty),
-    price: Number(s.price),
-    discountPrice: Number(s.discountPrice) || null,
-    status: s.status,
-    expiresAt: s.expiresAt
-      ? `${s.expiresAt} 00:00:00`
-      : null,
-    image: imageUrl,
-    createdAt: timestamp,
-    updatedAt: timestamp,
-  }));
+  // Create DB entries
+  return variant.sizes.map((s) => {
+    const sizeId = s.id ?? crypto.randomUUID(); // generate if missing
+    return {
+      id: sizeId,
+      productId,
+      color: variant.colorName,
+      size: s.size,
+      stockQty: Number(s.stockQty),
+      price: Number(s.price),
+      discountPrice:
+        s.discountPrice === null ||
+        s.discountPrice === "" ||
+        s.discountPrice === undefined
+          ? null
+          : Number(s.discountPrice),
+      status: s.status,
+      expiresAt: s.expiresAt
+        ? `${s.expiresAt} 00:00:00`
+        : null,
+      image: imageUrl,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    } as DBVariantFormData;
+  });
 }

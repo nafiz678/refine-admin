@@ -29,13 +29,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { EllipsisVertical, Plus, Trash2 } from "lucide-react";
+import {
+  Clock,
+  EllipsisVertical,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabaseClient } from "@/lib";
 import { useQuery } from "@tanstack/react-query";
 import { useDelete } from "@refinedev/core";
 import { Input } from "@/components/ui/input";
+import { format, parseISO } from "date-fns";
 
 export type ProductRow =
   Database["public"]["Tables"]["product"]["Row"];
@@ -101,11 +107,31 @@ const Products = () => {
         size: 100,
         meta: { disableSortBy: true },
       }),
-      columnHelper.accessor("createdAt", {
-        header: "Created At",
+      columnHelper.accessor("updatedAt", {
+        header: "Updated At",
         enableSorting: true,
-        cell: ({ getValue }) =>
-          new Date(getValue()).toLocaleDateString(),
+        cell: ({ getValue }) => {
+          const date = parseISO(getValue() + "Z");
+          const formattedDate = format(
+            date,
+            "dd/MM hh:mm a"
+          );
+          return (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                borderRadius: "4px",
+                fontSize: "0.875rem",
+              }}
+            >
+              {" "}
+              <Clock size={16} />{" "}
+              <span>{formattedDate}</span>{" "}
+            </div>
+          );
+        },
       }),
       columnHelper.display({
         header: "Stock",
@@ -315,8 +341,10 @@ const Products = () => {
             })}
             to="/products/add-new"
           >
-            <span className="hidden md:block">Add Product</span>
-            <Plus/>
+            <span className="hidden md:block">
+              Add Product
+            </span>
+            <Plus />
           </Link>
         </div>
       </div>

@@ -125,7 +125,6 @@ const UserSection = () => {
 
 
   const isLoggedIn = !!authProvider.data;
-  console.log(isLoggedIn)
 
   if (isLoggedIn) {
     return (

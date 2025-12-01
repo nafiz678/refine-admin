@@ -52,6 +52,7 @@ import { Login } from "./pages/login";
 import { Register } from "./pages/register";
 import Coupon from "./pages/coupon/coupon";
 import AddCoupon from "./pages/coupon/add/add-coupon";
+import { ForgotPassword } from "./pages/forgot-password";
 
 function App() {
   return (
@@ -197,6 +198,7 @@ function App() {
                 </Route>
                 <Route path="/register" element={<Register />}/>
                 <Route path="/login" element={<Login />}/>
+                <Route path="/forgot-password" element={<ForgotPassword />}/>
               </Routes>
 
               <Toaster />
