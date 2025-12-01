@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import OrdersTable from "./order-table";
+import { PageHeader } from "@/components/refine-ui/layout/page-header";
 
 interface OrderRow {
   id: string;
@@ -140,15 +141,11 @@ export default function OrdersPage() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-foreground">
-            Orders
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage and track all your customer orders in one
-            place
-          </p>
-        </div>
+        <PageHeader
+          title="Orders"
+          subtitle="Manage and track all your customer orders in one
+            place"
+        />
 
         {/* Filters & Controls */}
         <Card className="border-border bg-card p-4 sm:p-6">

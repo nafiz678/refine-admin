@@ -9,6 +9,7 @@ import { useCreate, useUpdate } from "@refinedev/core";
 import { toast } from "sonner";
 import { CategoryModal } from "./modal/category-modal";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/refine-ui/layout/page-header";
 
 export type Category =
   Database["public"]["Tables"]["category"]["Row"];
@@ -152,15 +153,11 @@ const Categories = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                Categories
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Manage your product categories and
-                subcategories
-              </p>
-            </div>
+            <PageHeader
+              title="Categories"
+              subtitle="Manage your product categories and
+                subcategories"
+            />
             <Button
               onClick={openCreateModal}
               className="gap-2 bg-primary hover:bg-primary/90 w-full sm:w-auto"

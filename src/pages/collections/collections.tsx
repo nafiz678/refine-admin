@@ -19,6 +19,7 @@ import {
   compressImage,
   generateFileName,
 } from "../products/upload-image";
+import { PageHeader } from "@/components/refine-ui/layout/page-header";
 
 export type CollectionProp = {
   createdAt: string;
@@ -138,14 +139,10 @@ export default function Collections() {
 
         const { data, error } = await supabaseClient.storage
           .from("content")
-          .upload(
-            fileName,
-            compressedBase64,
-            {
-              cacheControl: "3600",
-              upsert: true,
-            }
-          );
+          .upload(fileName, compressedBase64, {
+            cacheControl: "3600",
+            upsert: true,
+          });
 
         if (error) {
           toast.error("Failed to upload thumbnail");
@@ -214,16 +211,12 @@ export default function Collections() {
     <main className="min-h-screen bg-background">
       <div className="flex flex-col">
         {/* Header */}
-        <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+        <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
           <div className="flex h-16 items-center justify-between px-6">
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground">
-                Collections
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Manage your product collections
-              </p>
-            </div>
+            <PageHeader
+              title="Collections"
+              subtitle="Manage your product collections"
+            />
             <CreateCollectionDialog
               onCreate={handleCreateCollection}
             />

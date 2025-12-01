@@ -10,6 +10,7 @@ import React from "react";
 import type { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { PageHeader } from "@/components/refine-ui/layout/page-header";
 
 const DashboardSectionOne = () => {
   const Default_Year: number = 2025;
@@ -23,7 +24,7 @@ const DashboardSectionOne = () => {
   }
   return (
     <section className="flex items-center justify-between">
-      <h1 className="font-semibold text-lg lg:text-xl">DashBoard</h1>
+      <PageHeader title="Dashboard"/>
       <div>
         <div className={cn("grid gap-2 py-3")}>
           <Popover>

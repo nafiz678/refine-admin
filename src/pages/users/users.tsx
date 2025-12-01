@@ -2,6 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { supabaseAdmin } from "@/lib";
 import UsersTable from "./users-table";
+import { PageHeader } from "@/components/refine-ui/layout/page-header";
 
 const UsersTablePage = () => {
   const { data, isLoading } = useQuery({
@@ -31,9 +32,7 @@ const UsersTablePage = () => {
 
   return (
     <section className="container mx-auto space-y-5 p-4">
-      <div>
-        <h1 className="font-semibold text-xl">Users</h1>
-      </div>
+      <PageHeader title="Users" subtitle="Manage all the users here"/>
       <div>
         <UsersTable
           data={users}

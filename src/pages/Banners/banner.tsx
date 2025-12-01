@@ -3,7 +3,8 @@ import BannerDialog from "./banner-dialog";
 import BannerList from "./banner-list";
 import { supabaseClient } from "@/lib";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BarChart3, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { PageHeader } from "@/components/refine-ui/layout/page-header";
 
 const Banner = () => {
   const {
@@ -24,19 +25,10 @@ const Banner = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background p-6 md:p-8 space-y-8">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-primary" />
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Banners
-            </h1>
-          </div>
-          <p className="text-muted-foreground">
-            Manage your promotional banners
-          </p>
-        </div>
+        <PageHeader
+          title="Banners"
+          subtitle={`Manage your banners`}
+        />
 
         {/* Add button */}
         <div className="flex justify-end">
@@ -62,19 +54,10 @@ const Banner = () => {
     return (
       <div className="min-h-screen bg-background p-6 md:p-8 space-y-8">
         <div className="space-y-2 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <BarChart3 className="size-10 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                Banners
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                Manage your active banners
-              </p>
-            </div>
-          </div>
+          <PageHeader
+            title="Banners"
+            subtitle={`Manage your ${banners?.length} banners`}
+          />
 
           <div className="flex justify-end">
             <BannerDialog
@@ -111,20 +94,10 @@ const Banner = () => {
   return (
     <div className="min-h-screen bg-background p-6 md:p-8 space-y-8">
       <div className="space-y-2 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <BarChart3 className="size-10 text-primary" />
-          </div>
-          <div className="flex-1">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Banners
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Manage {banners.length} active banner
-              {banners.length !== 1 ? "s" : ""}
-            </p>
-          </div>
-        </div>
+        <PageHeader
+          title="Banners"
+          subtitle={`Manage your ${banners.length} banners`}
+        />
 
         {/* Action bar */}
         <div className="flex justify-end">

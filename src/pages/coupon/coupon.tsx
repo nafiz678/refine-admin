@@ -43,12 +43,12 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/refine-ui/layout/page-header";
 
 export type CouponProp =
   Database["content"]["Tables"]["coupons"]["Row"];
 
 export default function Coupon() {
-
   const columns = useMemo(() => {
     const columnHelper = createColumnHelper<CouponProp>();
 
@@ -99,7 +99,7 @@ export default function Coupon() {
               ৳{row.original.discountAmount}
             </span>
           ),
-          size: 110
+        size: 110,
       }),
 
       columnHelper.accessor("minCartValue", {
@@ -109,7 +109,7 @@ export default function Coupon() {
             ৳{getValue()}
           </span>
         ),
-        size: 130
+        size: 130,
       }),
 
       columnHelper.display({
@@ -146,7 +146,7 @@ export default function Coupon() {
             </Badge>
           );
         },
-        size: 100
+        size: 100,
       }),
 
       columnHelper.accessor("startDate", {
@@ -180,7 +180,7 @@ export default function Coupon() {
             </span>
           );
         },
-        size: 120
+        size: 120,
       }),
 
       columnHelper.display({
@@ -207,8 +207,8 @@ export default function Coupon() {
         schema: "content",
       },
       filters: {
-        mode: "server"
-      }
+        mode: "server",
+      },
     },
   });
 
@@ -554,7 +554,11 @@ function Loader() {
   );
 }
 
-function CouponStats({ coupons }: { coupons: CouponProp[] }) {
+function CouponStats({
+  coupons,
+}: {
+  coupons: CouponProp[];
+}) {
   const now = new Date();
 
   const active = coupons.filter((c) => {
@@ -584,7 +588,6 @@ function CouponStats({ coupons }: { coupons: CouponProp[] }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      
       {/* Active Coupons */}
       <div
         className="rounded-xl p-6 border"
@@ -642,19 +645,14 @@ function CouponStats({ coupons }: { coupons: CouponProp[] }) {
   );
 }
 
-
 function CouponHeader() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Coupon Management
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-            Create and manage your promotional coupons
-          </p>
-        </div>
+        <PageHeader
+          title="Coupon Management"
+          subtitle="Create and manage your promotional coupons"
+        />
         <Link
           className={`${buttonVariants({
             variant: "default",

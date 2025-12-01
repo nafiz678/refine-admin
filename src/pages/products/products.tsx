@@ -42,6 +42,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useDelete } from "@refinedev/core";
 import { Input } from "@/components/ui/input";
 import { format, parseISO } from "date-fns";
+import { PageHeader } from "@/components/refine-ui/layout/page-header";
+import TableColumnHeader from "@/components/refine-ui/data-table/table-column-header";
 
 export type ProductRow =
   Database["public"]["Tables"]["product"]["Row"];
@@ -67,8 +69,13 @@ const Products = () => {
 
     return [
       columnHelper.accessor("title", {
-        header: "Title",
-        enableSorting: false,
+        header: ({ column }) => (
+          <TableColumnHeader
+            title="Title"
+            column={column}
+          />
+        ),
+        enableSorting: true,
         cell: ({ row }) => {
           const thumbnail = row.original.thumbnail;
           if (!thumbnail) return;
@@ -98,17 +105,29 @@ const Products = () => {
             </div>
           );
         },
-        size: 400,
+        size: 300,
         meta: { disableSortBy: true },
       }),
       columnHelper.accessor("department", {
-        header: "Department",
+        header: ({ column }) => (
+          <div className="-ml-5">
+            <TableColumnHeader
+              title="Department"
+              column={column}
+            />
+          </div>
+        ),
         cell: ({ row }) => row.original.department,
         size: 100,
         meta: { disableSortBy: true },
       }),
       columnHelper.accessor("updatedAt", {
-        header: "Updated At",
+        header: ({ column }) => (
+          <TableColumnHeader
+            title="UpdatedAt"
+            column={column}
+          />
+        ),
         enableSorting: true,
         cell: ({ getValue }) => {
           const date = parseISO(getValue() + "Z");
@@ -134,8 +153,10 @@ const Products = () => {
         },
       }),
       columnHelper.display({
-        header: "Stock",
-        enableSorting: false,
+        id: "stock",
+        header: ({ column }) => (
+          <TableColumnHeader title="stock" column={column} />
+        ),
         cell: ({ row }) => {
           const productId = row.original.id;
           const relatedVariants =
@@ -153,8 +174,8 @@ const Products = () => {
             </span>
           );
         },
+        enableSorting: true,
         size: 80,
-        meta: { disableSortBy: true },
       }),
       columnHelper.display({
         id: "actions",
@@ -262,41 +283,8 @@ const Products = () => {
       filters: {
         mode: "server",
       },
-      // sorters: {
-      //   initial: [
-      //     {
-      //       field: "createdAt",
-      //       order: "asc"
-      //     }
-      //   ]
-      // }
     },
   });
-
-  // const sorters = table.refineCore.sorters;
-
-  // Gets the current sort order for the fields
-  // const currentSorterOrders = useMemo(() => {
-  //   return {
-  //     createdAt:
-  //       sorters.find((item) => item.field === "createdAt")
-  //         ?.order || "desc",
-  //   };
-  // }, [sorters]);
-
-  // type SortField = "createdAt";
-
-  // const toggleSort = (field: SortField) => {
-  //   table.refineCore.setSorters([
-  //     {
-  //       field : "createdAt",
-  //       order:
-  //         currentSorterOrders[field] === "asc"
-  //           ? "desc"
-  //           : "asc",
-  //     },
-  //   ]);
-  // };
 
   if (table.refineCore.tableQuery.isLoading) {
     return <Loader />;
@@ -305,7 +293,10 @@ const Products = () => {
   return (
     <section className="container mx-auto space-y-5 p-4">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-xl">Products</h1>
+        <PageHeader
+          title="Products"
+          subtitle="Manage all the products"
+        />
         <div className="flex items-center justify-center lg:gap-8 gap-2">
           {/* Search Bar */}
           <Input
@@ -325,15 +316,6 @@ const Products = () => {
             }}
             className="lg:w-60"
           />
-          {/* <Button
-            className="cursor-pointer border"
-            onClick={() => toggleSort("createdAt")}
-          >
-            Sort date by{" "}
-            {currentSorterOrders["createdAt"] === "asc"
-              ? "desc"
-              : "asc"}
-          </Button> */}
 
           <Link
             className={buttonVariants({
