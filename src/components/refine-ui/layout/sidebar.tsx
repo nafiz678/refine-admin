@@ -28,6 +28,7 @@ import {
 } from "@refinedev/core";
 import { ChevronRight, ListIcon } from "lucide-react";
 import React from "react";
+import { useTheme } from "../theme/theme-provider";
 
 export function Sidebar() {
   const { open } = useShadcnSidebar();
@@ -272,6 +273,7 @@ function SidebarItemLink({
 
 function SidebarHeader() {
   const { open, isMobile } = useShadcnSidebar();
+  const {theme} = useTheme(); 
 
   return (
     <ShadcnSidebarHeader
@@ -313,7 +315,7 @@ function SidebarHeader() {
           >
             <path
               d="M13.72 6.73v16.55l-2.16-1.67V5.07zm-3.08-2.37v16.55l-2.16-1.67V2.7zm6.15 3.55v12.63l-1.08.83-1.08-.83V7.91zm3.08-2.7v16.55l-2.16 1.66V6.87zm3.07-2.37v16.55l-2.15 1.66V4.5z"
-              style={{fill: "#606060"}}
+              style={{fill: theme === "dark" ? "#f7f7f7" : "#606060"}}
             />
           </svg>
         </div>

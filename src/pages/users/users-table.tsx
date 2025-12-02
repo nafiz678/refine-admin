@@ -99,14 +99,18 @@ const UsersTable = ({
               className="size-12 rounded object-cover"
               height={48}
               loading="lazy"
-              src={row.original.user_metadata.picture || "/placeholder.svg"}
+              src={
+                row.original.user_metadata.picture ||
+                "/placeholder.svg"
+              }
               width={48}
               draggable={false}
             />
 
-            <div>
-              <p className="truncate text-base">
-                {row.original.user_metadata.name ?? "User Name"}
+            <div className="flex-1 min-w-0">
+              <p className="truncate">
+                {row.original.user_metadata.name ??
+                  "User Name"}
               </p>
             </div>
           </div>

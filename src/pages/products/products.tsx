@@ -32,6 +32,7 @@ import {
 import {
   Clock,
   EllipsisVertical,
+  Eye,
   Plus,
   Trash2,
 } from "lucide-react";
@@ -44,6 +45,7 @@ import { Input } from "@/components/ui/input";
 import { format, parseISO } from "date-fns";
 import { PageHeader } from "@/components/refine-ui/layout/page-header";
 import TableColumnHeader from "@/components/refine-ui/data-table/table-column-header";
+import { CategoryFilter } from "./sort-category";
 
 export type ProductRow =
   Database["public"]["Tables"]["product"]["Row"];
@@ -53,6 +55,9 @@ export type ProductVariant =
 
 const Products = () => {
   const [search, setSearch] = useState("");
+  const [filteredCategory, setFilteredCategory] = useState<
+    string | null
+  >(null);
   const { data: variants } = useQuery({
     queryKey: ["productVariants"],
     queryFn: async () => {
@@ -63,6 +68,13 @@ const Products = () => {
     },
   });
   const { mutate } = useDelete();
+
+  const { data: categories = [] } = useCategories();
+
+  const categoryMap = categories.reduce((acc, category) => {
+    acc[category.id] = category.name;
+    return acc;
+  }, {} as Record<string, string>);
 
   const columns = React.useMemo(() => {
     const columnHelper = createColumnHelper<ProductRow>();
@@ -97,7 +109,7 @@ const Products = () => {
                 className="size-12 object-cover"
               />
               <h2
-                className="font-medium text-base opacity-90"
+                className="font-medium text-base opacity-90 truncate"
                 title={row.original.title}
               >
                 {row.original.title}
@@ -105,26 +117,30 @@ const Products = () => {
             </div>
           );
         },
-        size: 300,
+        size: 200,
         meta: { disableSortBy: true },
       }),
       columnHelper.accessor("department", {
-        header: ({ column }) => (
-          <div className="-ml-5">
-            <TableColumnHeader
-              title="Department"
-              column={column}
-            />
-          </div>
+        header: () => (
+          <span className="-ml-2">Department</span>
         ),
         cell: ({ row }) => row.original.department,
-        size: 100,
+        size: 80,
         meta: { disableSortBy: true },
+      }),
+      columnHelper.accessor("categoryId", {
+        header: "Category",
+        cell: ({ row }) => {
+          const id = row.original.categoryId;
+          if (!id) return;
+          return categoryMap[id] || "Unknown Category";
+        },
+        size: 100,
       }),
       columnHelper.accessor("updatedAt", {
         header: ({ column }) => (
           <TableColumnHeader
-            title="UpdatedAt"
+            title="Last Updated"
             column={column}
           />
         ),
@@ -151,11 +167,15 @@ const Products = () => {
             </div>
           );
         },
+        size: 120,
       }),
       columnHelper.display({
         id: "stock",
         header: ({ column }) => (
-          <TableColumnHeader title="stock" column={column} />
+          <TableColumnHeader
+            title="Stock"
+            column={column}
+          />
         ),
         cell: ({ row }) => {
           const productId = row.original.id;
@@ -176,6 +196,38 @@ const Products = () => {
         },
         enableSorting: true,
         size: 80,
+      }),
+      columnHelper.display({
+        header: "Price",
+        cell: ({ row }) => {
+          const productId = row.original.id;
+          const relatedVariants =
+            variants?.filter(
+              (v) => v.productId === productId
+            ) || [];
+
+          // Get all valid prices (discountedPrice if available, else price)
+          const prices = relatedVariants
+            .map((v) => v.discountPrice ?? v.price)
+            .filter(
+              (p): p is number =>
+                p !== null && p !== undefined
+            );
+
+          if (prices.length === 0) return "—";
+
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
+
+          return (
+            <span className="font-medium">
+              ৳{minPrice} - ৳{maxPrice}
+            </span>
+          );
+        },
+
+        enableSorting: false, // No sorting
+        size: 120,
       }),
       columnHelper.display({
         id: "actions",
@@ -203,6 +255,23 @@ const Products = () => {
                   Actions
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+
+                <DropdownMenuItem className="p-0 rounded-lg">
+                  <Button
+                    className="p-0"
+                    variant={"ghost"}
+                    asChild
+                  >
+                    <Link
+                      to={`https://millennial-clothing.com/products/${row.original.id}`}
+                      className="flex items-center justify-center gap-2 p-0"
+                      target="_blank"
+                    >
+                      <Eye />
+                      Preview Product
+                    </Link>
+                  </Button>
+                </DropdownMenuItem>
 
                 <DropdownMenuItem className="p-0 rounded-lg">
                   <EditButton
@@ -283,6 +352,9 @@ const Products = () => {
       filters: {
         mode: "server",
       },
+      sorters: {
+        mode: "off",
+      },
     },
   });
 
@@ -298,6 +370,24 @@ const Products = () => {
           subtitle="Manage all the products"
         />
         <div className="flex items-center justify-center lg:gap-8 gap-2">
+          {/* Category Filter */}
+          {categories.length > 0 && (
+            <CategoryFilter
+              categories={categories}
+              selectedCategory={filteredCategory}
+              onCategoryChange={(catId) => {
+                setFilteredCategory(catId);
+                table.refineCore.setFilters([
+                  {
+                    field: "categoryId",
+                    operator: "eq",
+                    value: catId ?? undefined,
+                  },
+                ]);
+              }}
+            />
+          )}
+
           {/* Search Bar */}
           <Input
             placeholder="Search products..."
@@ -390,3 +480,17 @@ function Loader() {
     </section>
   );
 }
+
+const useCategories = () => {
+  return useQuery({
+    queryKey: ["category"],
+    queryFn: async () => {
+      const { data, error } = await supabaseClient
+        .from("category")
+        .select("id, name");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+};
