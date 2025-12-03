@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trash2, Eye } from "lucide-react";
+import { Trash2, Eye, MoreHorizontal, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -20,8 +20,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+
 import { toast } from "sonner";
 import StatusBadge from "./status-badge";
+import { Link } from "react-router";
 
 interface OrderRow {
   id: string;
@@ -51,15 +59,15 @@ interface OrdersTableProps {
 export default function OrdersTable({
   orders,
 }: OrdersTableProps) {
-  const [, setDeletingId] = useState<
-    string | null
-  >(null);
+  const [, setDeletingId] = useState<string | null>(null);
 
   const handleStatusChange = (
     orderId: string,
     newStatus: string
   ) => {
-    toast.success(`Order status updated to ${newStatus + orderId}`);
+    toast.success(
+      `Order status updated to ${newStatus + orderId}`
+    );
   };
 
   const handleDelete = (orderId: string) => {
@@ -125,11 +133,20 @@ export default function OrdersTable({
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 flex items-center gap-3">
+                  <img
+                    src={
+                      order.product.thumbnail ||
+                      "/placeholder.svg"
+                    } // replace with the actual image URL field
+                    alt={order.product.title}
+                    className="w-12 h-12 object-cover rounded"
+                  />
                   <span className="text-sm text-foreground">
                     {order.product.title}
                   </span>
                 </td>
+
                 <td className="px-6 py-4">
                   <span className="font-semibold text-foreground">
                     ৳{order.paymentTotal.toLocaleString()}
@@ -179,54 +196,79 @@ export default function OrdersTable({
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="hover:bg-primary/10 h-8 w-8 p-0"
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                      >
+                        <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-44"
                     >
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="hover:bg-destructive/10 h-8 w-8 p-0"
+                      {/* Print Invoice */}
+                      <DropdownMenuItem
+                        onClick={() => window.print()}
+                        className="cursor-pointer"
+                      >
+                        <Printer className="h-4 w-4 mr-2" />
+                        Print Invoice
+                      </DropdownMenuItem>
+
+                      {/* Order Summary */}
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to={`/orders/summary/${order.id}`}
+                          className="flex items-center w-full"
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Delete Order?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                            The order{" "}
-                            {order.id
-                              .slice(0, 8)
-                              .toUpperCase()}{" "}
-                            will be permanently deleted.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>
-                            Cancel
-                          </AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() =>
-                              handleDelete(order.id)
-                            }
-                            className="bg-destructive hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Order Summary
+                        </Link>
+                      </DropdownMenuItem>
+
+                      {/* Delete Order */}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem className="text-destructive cursor-pointer">
+                            <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                            Delete Order
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Delete Order?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone.
+                              The order{" "}
+                              {order.id
+                                .slice(0, 8)
+                                .toUpperCase()}{" "}
+                              will be permanently deleted.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() =>
+                                handleDelete(order.id)
+                              }
+                              className="bg-destructive hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </td>
               </tr>
             ))}

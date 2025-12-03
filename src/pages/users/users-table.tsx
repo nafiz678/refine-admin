@@ -65,7 +65,6 @@ import { Link, useNavigate } from "react-router";
 import TableColumnHeader from "@/components/refine-ui/data-table/table-column-header";
 import TableView from "./table-view";
 import TablePagination from "./table-pagination";
-import { UsersChart } from "./users-chart";
 import DebouncedInput from "@/components/ui/debounced-input";
 import { formatDate } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";
@@ -242,7 +241,6 @@ const UsersTable = ({
 
   return (
     <section>
-      <UsersChart />
       <div className="flex flex-wrap items-center justify-between gap-5 py-4">
         <DebouncedInput
           className="max-w-sm"

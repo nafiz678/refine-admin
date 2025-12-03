@@ -115,7 +115,7 @@ export function AttachedProducts({ collectionId }: Prop) {
       </div>
 
       {attachedProducts.length > 0 ? (
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="overflow-y-auto max-h-[25vw] rounded-lg border border-border">
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow className="hover:bg-transparent">

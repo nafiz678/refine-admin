@@ -53,6 +53,7 @@ import { Register } from "./pages/register";
 import Coupon from "./pages/coupon/coupon";
 import AddCoupon from "./pages/coupon/add/add-coupon";
 import { ForgotPassword } from "./pages/forgot-password";
+import { OrderSummary } from "./pages/orders/order-summary";
 
 function App() {
   return (
@@ -179,6 +180,7 @@ function App() {
                   </Route>
                   <Route path="/orders">
                     <Route index element={<Orders />} />
+                    <Route path="summary/:id" element={<OrderSummary />} />
                   </Route>
 
                   <Route path="/categories">

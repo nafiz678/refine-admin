@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CollectionProp } from "./collections";
-import { formatTime } from "@/lib/utils";
 import { X } from "lucide-react";
 
 interface CollectionFormProps {
@@ -202,30 +201,8 @@ export function CollectionForm({
         </p>
       </div>
 
-      {/* Read-only fields */}
-      {initialData && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground">
-              Created At
-            </Label>
-            <p className="rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
-              {formatTime(initialData.createdAt)}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground">
-              Updated At
-            </Label>
-            <p className="rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
-              {formatTime(initialData.updatedAt)}
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Actions */}
-      <div className="flex justify-end gap-3 border-t border-border pt-6">
+      <div className="flex justify-end gap-3">
         <Button
           type="button"
           variant="outline"

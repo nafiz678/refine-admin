@@ -286,7 +286,8 @@ export default function OrdersPage() {
   );
 }
 
-const MOCK_ORDERS: OrderRow[] = [
+// eslint-disable-next-line react-refresh/only-export-components
+export const MOCK_ORDERS: OrderRow[] = [
   {
     id: "a12f9c01-3d2b-4c6d-9a32-92c1e5abf101",
     coupon: "NEWYEAR10",

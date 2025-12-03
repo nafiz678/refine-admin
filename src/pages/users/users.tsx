@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabaseAdmin } from "@/lib";
 import UsersTable from "./users-table";
 import { PageHeader } from "@/components/refine-ui/layout/page-header";
+import { UsersChart } from "./users-chart";
 
 const UsersTablePage = () => {
   const { data, isLoading } = useQuery({
@@ -34,6 +35,11 @@ const UsersTablePage = () => {
     <section className="container mx-auto space-y-5 p-4">
       <PageHeader title="Users" subtitle="Manage all the users here"/>
       <div>
+
+        
+      <UsersChart />
+
+        
         <UsersTable
           data={users}
           totalUsers={users.length}
