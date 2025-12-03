@@ -11,21 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command";
-// import DebouncedInput from "@/components/ui/debounced-input";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import DebouncedInput from "@/components/ui/debounced-input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,11 +19,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -51,6 +32,7 @@ import {
   type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   type SortingState,
@@ -60,12 +42,11 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import React, { useTransition } from "react";
 import { toast } from "sonner";
-import { useIsMobile } from "@/hooks/use-mobile";
+// import { useIsMobile } from "@/hooks/use-mobile";
 import { Link, useNavigate } from "react-router";
 import TableColumnHeader from "@/components/refine-ui/data-table/table-column-header";
 import TableView from "./table-view";
 import TablePagination from "./table-pagination";
-import DebouncedInput from "@/components/ui/debounced-input";
 import { formatDate } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";
 
@@ -126,6 +107,8 @@ const UsersTable = ({
           {row.original.email}
         </p>
       ),
+      enableColumnFilter: true,
+      filterFn: "includesString",
     },
 
     {
@@ -230,8 +213,7 @@ const UsersTable = ({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    manualPagination: true,
-    manualFiltering: true,
+    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
       columnFilters,
@@ -260,7 +242,7 @@ const UsersTable = ({
         <div className="max-w-sm"></div>
 
         <div className="flex items-center space-x-2">
-          <CustomTableFacetedFilter />
+          {/* <CustomTableFacetedFilter /> */}
           <TableView table={table} />
         </div>
       </div>
@@ -327,143 +309,3 @@ const UsersTable = ({
 };
 
 export default UsersTable;
-
-const RoleOptions = [
-  { label: "Admin", value: "admin" },
-  { label: "User", value: "user" },
-];
-type Status = {
-  value: string;
-  label: string;
-};
-const CustomTableFacetedFilter = () => {
-  const [open, setOpen] = React.useState(false);
-  const isDesktop = useIsMobile();
-  const [selectedStatus, setSelectedStatus] =
-    React.useState<Status | null>(null);
-
-  if (!isDesktop) {
-    return (
-      <Popover onOpenChange={setOpen} open={open}>
-        <PopoverTrigger asChild>
-          <Button
-            className="w-[150px] justify-start"
-            variant="outline"
-          >
-            {selectedStatus ? (
-              selectedStatus.label
-            ) : (
-              <>Role</>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          align="start"
-          className="w-[200px] p-0"
-        >
-          <StatusList
-            setOpen={setOpen}
-            setSelectedStatus={setSelectedStatus}
-          />
-        </PopoverContent>
-      </Popover>
-    );
-  }
-
-  return (
-    <Drawer onOpenChange={setOpen} open={open}>
-      <DrawerTrigger asChild>
-        <Button
-          className="w-[150px] justify-start"
-          variant="outline"
-        >
-          {selectedStatus ? (
-            selectedStatus.label
-          ) : (
-            <>Role</>
-          )}
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <div className="mt-4 border-t">
-          <StatusList
-            setOpen={setOpen}
-            setSelectedStatus={setSelectedStatus}
-          />
-        </div>
-      </DrawerContent>
-    </Drawer>
-  );
-};
-
-function StatusList({
-  setOpen,
-  setSelectedStatus,
-}: {
-  setOpen: (open: boolean) => void;
-  setSelectedStatus: (status: Status | null) => void;
-}) {
-  const router = useNavigate();
-  // const { filterBy } = useSearchParams({ from: "/admin/users/" });
-
-  const handleSelectFilter = (value: string | null) => {
-    if (value) {
-      router("/admin/users");
-      setOpen(false);
-    } else {
-      router("/admin/users");
-
-      // navigate({
-      //   to: "/admin/users",
-      //   search: (prev) => {
-      //     const { ...rest } = prev;
-      //     return rest;
-      //   },
-      // });
-
-      setOpen(false);
-      // const newParams = new URLSearchParams(searchParams.toString());
-      // newParams.delete("filterBy");
-      // router.push(`?${newParams.toString()}`);
-    }
-  };
-  return (
-    <Command>
-      <CommandInput placeholder="Filter status..." />
-      <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup>
-          {RoleOptions.map((status) => (
-            <CommandItem
-              // className={filterBy === status.value ? "bg-muted" : ""}
-              key={status.value}
-              onSelect={(value) => {
-                setSelectedStatus(
-                  RoleOptions.find(
-                    (priority) => priority.value === value
-                  ) || null
-                );
-                handleSelectFilter(value);
-              }}
-              value={status.value}
-            >
-              {status.label}
-            </CommandItem>
-          ))}
-        </CommandGroup>
-        <CommandSeparator />
-        <CommandGroup>
-          <CommandItem
-            className="justify-center text-center"
-            onSelect={() => {
-              setSelectedStatus(null);
-              handleSelectFilter(null);
-            }}
-          >
-            Clear filters
-          </CommandItem>
-        </CommandGroup>
-      </CommandList>
-    </Command>
-  );
-}

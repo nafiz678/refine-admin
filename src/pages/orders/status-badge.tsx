@@ -13,33 +13,33 @@ export default function StatusBadge({
 }: StatusBadgeProps) {
   const statusConfig = {
     PENDING: {
-      bg: "bg-amber-100 dark:bg-amber-950",
-      text: "text-amber-800 dark:text-amber-200",
+      bg: "bg-[#E6F0F2] dark:bg-[#3A4C53]",
+      text: "text-[#7296A4] dark:text-[#CDDEE5]",
       label: "Pending",
     },
     PROCESSING: {
-      bg: "bg-blue-100 dark:bg-blue-950",
-      text: "text-blue-800 dark:text-blue-200",
+      bg: "bg-[#CDDEE5] dark:bg-[#2E3E45]",
+      text: "text-[#4F7482] dark:text-[#9EBECB]",
       label: "Processing",
     },
     PACKAGING: {
-      bg: "bg-purple-100 dark:bg-purple-950",
-      text: "text-purple-800 dark:text-purple-200",
+      bg: "bg-[#9EBECB] dark:bg-[#263238]",
+      text: "text-[#3B5A65] dark:text-[#E6F0F2]",
       label: "Packaging",
     },
     SHIPPED: {
-      bg: "bg-indigo-100 dark:bg-indigo-950",
-      text: "text-indigo-800 dark:text-indigo-200",
+      bg: "bg-[#9EBECB] dark:bg-[#1F2B31]",
+      text: "text-[#2F4A55] dark:text-[#CDDEE5]",
       label: "Shipped",
     },
     DELIVERED: {
-      bg: "bg-emerald-100 dark:bg-emerald-950",
-      text: "text-emerald-800 dark:text-emerald-200",
+      bg: "bg-[#7296A4] dark:bg-[#1B252A]",
+      text: "text-white dark:text-[#E6F0F2]",
       label: "Delivered",
     },
     CANCELLED: {
-      bg: "bg-red-100 dark:bg-red-950",
-      text: "text-red-800 dark:text-red-200",
+      bg: "bg-[#EFEFEF] dark:bg-[#2D2D2D]",
+      text: "text-[#6B6B6B] dark:text-[#CDDEE5]",
       label: "Cancelled",
     },
   };

@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Trash2, Eye, MoreHorizontal, Printer } from "lucide-react";
+import {
+  Trash2,
+  Eye,
+  MoreHorizontal,
+  Printer,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -30,8 +35,13 @@ import {
 import { toast } from "sonner";
 import StatusBadge from "./status-badge";
 import { Link } from "react-router";
+import {
+  PDFDownloadLink,
+  PDFViewer,
+} from "@react-pdf/renderer";
+import { OrderInvoicePDF } from "./invoice-pdf";
 
-interface OrderRow {
+export interface OrderRow {
   id: string;
   coupon: string | null;
   createdAt: string;
@@ -49,7 +59,8 @@ interface OrderRow {
     title: string;
     price: number;
     thumbnail: string | null;
-  };
+    quantity: number;
+  }[];
 }
 
 interface OrdersTableProps {
@@ -59,6 +70,8 @@ interface OrdersTableProps {
 export default function OrdersTable({
   orders,
 }: OrdersTableProps) {
+  const [previewOrder, setPreviewOrder] =
+    useState<OrderRow | null>(null);
   const [, setDeletingId] = useState<string | null>(null);
 
   const handleStatusChange = (
@@ -136,14 +149,14 @@ export default function OrdersTable({
                 <td className="px-6 py-4 flex items-center gap-3">
                   <img
                     src={
-                      order.product.thumbnail ||
+                      order.product[0].thumbnail ||
                       "/placeholder.svg"
                     } // replace with the actual image URL field
-                    alt={order.product.title}
+                    alt={order.product[0].title}
                     className="w-12 h-12 object-cover rounded"
                   />
                   <span className="text-sm text-foreground">
-                    {order.product.title}
+                    {order.product[0].title}
                   </span>
                 </td>
 
@@ -159,7 +172,9 @@ export default function OrdersTable({
                       handleStatusChange(order.id, value)
                     }
                   >
-                    <SelectTrigger className="border-border bg-background h-8 w-32">
+                    <SelectTrigger
+                      className={`border-border bg-background h-8 w-32`}
+                    >
                       <StatusBadge
                         status={order.orderStatus}
                       />
@@ -212,7 +227,9 @@ export default function OrdersTable({
                     >
                       {/* Print Invoice */}
                       <DropdownMenuItem
-                        onClick={() => window.print()}
+                        onClick={() =>
+                          setPreviewOrder(order)
+                        }
                         className="cursor-pointer"
                       >
                         <Printer className="h-4 w-4 mr-2" />
@@ -296,7 +313,7 @@ export default function OrdersTable({
             </div>
             <div className="mb-3 space-y-1 text-sm">
               <p className="text-muted-foreground">
-                {order.product.title}
+                {order.product[0].title}
               </p>
               <p className="font-semibold text-foreground">
                 ৳{order.paymentTotal.toLocaleString()}
@@ -377,6 +394,83 @@ export default function OrdersTable({
           </div>
         ))}
       </div>
+
+      {/* PDF Preview Modal */}
+      {previewOrder && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              width: "90%",
+              height: "90%",
+              backgroundColor: "#fff",
+              borderRadius: "10px",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* PDF Preview */}
+            <div style={{ flex: 1 }}>
+              <PDFViewer width="100%" height="100%">
+                <OrderInvoicePDF order={previewOrder} />
+              </PDFViewer>
+            </div>
+
+            {/* Modal Actions */}
+            <div
+              style={{
+                padding: "10px",
+                display: "flex",
+                justifyContent: "space-between",
+                borderTop: "1px solid #e5e7eb",
+              }}
+            >
+              <Button
+                variant={"outline"}
+                onClick={() => setPreviewOrder(null)}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </Button>
+
+              <PDFDownloadLink
+                document={
+                  <OrderInvoicePDF order={previewOrder} />
+                }
+                fileName={`Invoice_${previewOrder.id}.pdf`}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  backgroundColor: "var(--foreground)",
+                  color: "var(--background)"
+                }}
+              >
+                {({ loading }) =>
+                  loading ? "Preparing..." : "Download PDF"
+                }
+              </PDFDownloadLink>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

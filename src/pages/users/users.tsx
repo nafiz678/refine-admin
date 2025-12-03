@@ -30,16 +30,15 @@ const UsersTablePage = () => {
     );
   }
 
-
   return (
     <section className="container mx-auto space-y-5 p-4">
-      <PageHeader title="Users" subtitle="Manage all the users here"/>
+      <PageHeader
+        title="Users"
+        subtitle="Manage all the users here"
+      />
       <div>
+        <UsersChart />
 
-        
-      <UsersChart />
-
-        
         <UsersTable
           data={users}
           totalUsers={users.length}

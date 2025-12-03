@@ -43,27 +43,37 @@ function formatCurrency(amount: number) {
 function getStatusColor(status: string) {
   switch (status.toUpperCase()) {
     case "PENDING":
-      return "bg-amber-100 text-amber-800 border-amber-200";
+      // Soft warning tint
+      return "bg-[#E6F0F2] text-[#7296A4] border-[#CDDEE5]";
+
     case "PROCESSING":
-      return "bg-blue-100 text-blue-800 border-blue-200";
+      // Base tone for active state
+      return "bg-[#CDDEE5] text-[#4F7482] border-[#9EBECB]";
+
     case "SHIPPED":
-      return "bg-indigo-100 text-indigo-800 border-indigo-200";
+      // Slightly darker = movement/transition
+      return "bg-[#9EBECB] text-[#3B5A65] border-[#7296A4]";
+
     case "DELIVERED":
-      return "bg-emerald-100 text-emerald-800 border-emerald-200";
+      // Success but within same palette
+      return "bg-[#7296A4] text-white border-[#5E7F8C]";
+
     case "CANCELLED":
-      return "bg-red-100 text-red-800 border-red-200";
+      // Neutral-gray from your palette
+      return "bg-[#EFEFEF] text-[#6B6B6B] border-[#CDDEE5]";
+
     default:
       return "bg-muted text-muted-foreground";
   }
 }
 
 export function OrderSummary() {
-  const {id} = useParams();
+  const { id } = useParams();
   const order = MOCK_ORDERS.find(
     (order) => order.id === id
   );
 
-  if(!order ) return null
+  if (!order) return null;
 
   const discount =
     order.product.price - order.discountedPrice;
@@ -84,6 +94,7 @@ export function OrderSummary() {
           </p>
         </div>
         <Badge
+          variant={"outline"}
           className={`w-fit text-sm font-medium ${getStatusColor(
             order.orderStatus
           )}`}
