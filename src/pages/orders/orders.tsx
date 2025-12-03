@@ -228,8 +228,10 @@ export const MOCK_ORDERS: OrderRow[] = [
     id: "a12f9c01-3d2b-4c6d-9a32-92c1e5abf101",
     coupon: "NEWYEAR10",
     createdAt: "2025-01-10T12:45:30.000Z",
+    updatedAt: "2025-01-10T12:45:30.000Z",
     orderStatus: "PENDING",
-    paymentTotal: 1000,
+    paymentTotal: 2000,
+    discountedPrice: 1800, // 10% off
     paymentMethod: "COD",
     user: { name: "Rafid Hasan", email: "rafid@example.com" },
     product: [
@@ -245,8 +247,10 @@ export const MOCK_ORDERS: OrderRow[] = [
     id: "c48e92d3-88a9-42c5-a20e-52fa912bc200",
     coupon: null,
     createdAt: "2025-01-12T09:12:10.000Z",
+    updatedAt: "2025-01-13T14:22:40.000Z",
     orderStatus: "PROCESSING",
     paymentTotal: 1600,
+    discountedPrice: 1600,
     paymentMethod: "BKASH",
     user: { name: "MD Nafizul Iqram", email: "nafizul@example.com" },
     product: [
@@ -262,8 +266,10 @@ export const MOCK_ORDERS: OrderRow[] = [
     id: "d28a22dc-91a4-48df-bf90-82eab3bd2211",
     coupon: "FLASH20",
     createdAt: "2025-01-13T18:25:50.000Z",
+    updatedAt: "2025-01-14T10:00:10.000Z",
     orderStatus: "PACKAGING",
     paymentTotal: 3400,
+    discountedPrice: 2720, // 20% off
     paymentMethod: "BKASH",
     user: { name: "Sadia Chowdhury", email: "sadia@example.com" },
     product: [
@@ -279,8 +285,10 @@ export const MOCK_ORDERS: OrderRow[] = [
     id: "f92b1e76-212a-4a37-92fa-72bcfaeaa400",
     coupon: null,
     createdAt: "2025-01-14T11:55:00.000Z",
+    updatedAt: "2025-01-15T08:34:30.000Z",
     orderStatus: "SHIPPED",
     paymentTotal: 5500,
+    discountedPrice: 5500,
     paymentMethod: "COD",
     user: { name: "Arif Rahman", email: "arif@example.com" },
     product: [
@@ -296,8 +304,10 @@ export const MOCK_ORDERS: OrderRow[] = [
     id: "e11c672f-5181-4b04-9e56-ae7f9003a588",
     coupon: "SAVE50",
     createdAt: "2025-01-15T15:20:10.000Z",
+    updatedAt: "2025-01-16T10:40:00.000Z",
     orderStatus: "DELIVERED",
     paymentTotal: 1000,
+    discountedPrice: 950, // small discount
     paymentMethod: "BKASH",
     user: { name: "Tanvir Ahmed", email: "tanvir@example.com" },
     product: [
@@ -313,8 +323,10 @@ export const MOCK_ORDERS: OrderRow[] = [
     id: "ab992d7c-7fc3-4f9f-b92f-c4c5232bb999",
     coupon: null,
     createdAt: "2025-01-15T19:22:10.000Z",
+    updatedAt: "2025-01-16T11:00:00.000Z",
     orderStatus: "CANCELLED",
     paymentTotal: 0,
+    discountedPrice: 0,
     paymentMethod: "COD",
     user: { name: "Mahmud Hossain", email: "mahmud@example.com" },
     product: [
@@ -330,8 +342,10 @@ export const MOCK_ORDERS: OrderRow[] = [
     id: "1f23df92-8ac2-4d21-b998-aaa1112bf001",
     coupon: "WINTER15",
     createdAt: "2025-01-17T10:20:15.000Z",
+    updatedAt: "2025-01-17T10:20:15.000Z",
     orderStatus: "PENDING",
     paymentTotal: 2500,
+    discountedPrice: 2125, // 15% off
     paymentMethod: "BKASH",
     user: { name: "Farhan Islam", email: "farhan@example.com" },
     product: [
@@ -347,8 +361,10 @@ export const MOCK_ORDERS: OrderRow[] = [
     id: "2bd498a1-1123-4ee7-9012-99dfb88cd002",
     coupon: null,
     createdAt: "2025-01-18T08:50:05.000Z",
+    updatedAt: "2025-01-18T09:30:15.000Z",
     orderStatus: "PROCESSING",
     paymentTotal: 1500,
+    discountedPrice: 1500,
     paymentMethod: "COD",
     user: { name: "Sajib Ahmed", email: "sajib@example.com" },
     product: [
@@ -364,8 +380,10 @@ export const MOCK_ORDERS: OrderRow[] = [
     id: "3ef11abc-23dd-443d-91af-a1a1fbbcd003",
     coupon: "FREESHIP",
     createdAt: "2025-01-18T11:10:40.000Z",
+    updatedAt: "2025-01-18T11:10:40.000Z",
     orderStatus: "PACKAGING",
     paymentTotal: 2000,
+    discountedPrice: 2000,
     paymentMethod: "BKASH",
     user: { name: "Samiya Aktar", email: "samiya@example.com" },
     product: [
@@ -373,23 +391,6 @@ export const MOCK_ORDERS: OrderRow[] = [
         title: "Women’s Long Coat",
         price: 2000,
         thumbnail: "https://picsum.photos/seed/womencoat/300",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "4cc71e93-77f9-4e32-bbd9-cf44cdde4004",
-    coupon: null,
-    createdAt: "2025-01-19T14:25:50.000Z",
-    orderStatus: "SHIPPED",
-    paymentTotal: 1300,
-    paymentMethod: "COD",
-    user: { name: "Jahidul Hasan", email: "jahid@example.com" },
-    product: [
-      {
-        title: "Men’s Slim Fit T-Shirt",
-        price: 1300,
-        thumbnail: "https://picsum.photos/seed/slimfittee/300",
         quantity: 1,
       },
     ],

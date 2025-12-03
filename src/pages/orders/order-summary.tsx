@@ -76,7 +76,15 @@ export function OrderSummary() {
   if (!order) return null;
 
   const discount =
-    order.product.price - order.discountedPrice;
+    order.product.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0
+    ) - order.discountedPrice;
+
+  const subtotal = order.product.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
 
   return (
     <div className="space-y-6">
@@ -117,45 +125,44 @@ export function OrderSummary() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Product Info */}
-              <div className="flex gap-4">
-                <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-lg border bg-muted">
-                  <img
-                    src={
-                      order.product.thumbnail ||
-                      "/placeholder.svg"
-                    }
-                    alt={order.product.title}
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col justify-center space-y-2">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {order.product.title}
-                  </h3>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        Original Price:
-                      </span>
-                      <span className="text-sm line-through text-muted-foreground">
-                        {formatCurrency(
-                          order.product.price
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        Discounted Price:
-                      </span>
-                      <span className="text-lg font-bold text-emerald-600">
-                        {formatCurrency(
-                          order.discountedPrice
-                        )}
-                      </span>
+              {order.product.map((item, index) => (
+                <div key={index} className="flex gap-4">
+                  <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-lg border bg-muted">
+                    <img
+                      src={
+                        item.thumbnail || "/placeholder.svg"
+                      }
+                      alt={item.title}
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col justify-center space-y-2">
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {item.title} (x{item.quantity})
+                    </h3>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                          Original Price:
+                        </span>
+                        <span className="text-sm line-through text-muted-foreground">
+                          {formatCurrency(item.price)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                          Discounted Price:
+                        </span>
+                        <span className="text-lg font-bold text-emerald-600">
+                          {formatCurrency(
+                            item.price * item.quantity
+                          )}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              ))}
 
               <Separator />
 
@@ -376,7 +383,7 @@ export function OrderSummary() {
                   Subtotal
                 </span>
                 <span className="text-foreground">
-                  {formatCurrency(order.product.price)}
+                  {formatCurrency(subtotal)}
                 </span>
               </div>
               <div className="flex items-center justify-between">

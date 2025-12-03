@@ -53,6 +53,8 @@ export interface OrderRow {
     | "DELIVERED"
     | "CANCELLED";
   paymentTotal: number;
+  discountedPrice: number;
+  updatedAt: string;
   paymentMethod: string;
   user: { name: string; email: string };
   product: {
