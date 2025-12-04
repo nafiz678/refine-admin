@@ -35,11 +35,7 @@ import {
 import { toast } from "sonner";
 import StatusBadge from "./status-badge";
 import { Link } from "react-router";
-import {
-  PDFDownloadLink,
-  PDFViewer,
-} from "@react-pdf/renderer";
-import { OrderInvoicePDF } from "./invoice-pdf";
+import InvoiceDrawer from "./invoice-preview-dialog";
 
 export interface OrderRow {
   id: string;
@@ -398,81 +394,10 @@ export default function OrdersTable({
       </div>
 
       {/* PDF Preview Modal */}
-      {previewOrder && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              width: "90%",
-              height: "90%",
-              backgroundColor: "#fff",
-              borderRadius: "10px",
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            {/* PDF Preview */}
-            <div style={{ flex: 1 }}>
-              <PDFViewer width="100%" height="100%">
-                <OrderInvoicePDF order={previewOrder} />
-              </PDFViewer>
-            </div>
-
-            {/* Modal Actions */}
-            <div
-              style={{
-                padding: "10px",
-                display: "flex",
-                justifyContent: "space-between",
-                borderTop: "1px solid #e5e7eb",
-              }}
-            >
-              <Button
-                variant={"outline"}
-                onClick={() => setPreviewOrder(null)}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                }}
-              >
-                Close
-              </Button>
-
-              <PDFDownloadLink
-                document={
-                  <OrderInvoicePDF order={previewOrder} />
-                }
-                fileName={`Invoice_${previewOrder.id}.pdf`}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  backgroundColor: "var(--foreground)",
-                  color: "var(--background)"
-                }}
-              >
-                {({ loading }) =>
-                  loading ? "Preparing..." : "Download PDF"
-                }
-              </PDFDownloadLink>
-            </div>
-          </div>
-        </div>
-      )}
+      <InvoiceDrawer
+        previewOrder={previewOrder}
+        setPreviewOrder={setPreviewOrder}
+      />
     </div>
   );
 }
