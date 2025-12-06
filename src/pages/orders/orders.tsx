@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Search, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,67 +11,122 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import OrdersTable, { OrderRow } from "./order-table";
+import OrdersTable from "./order-table";
 import { PageHeader } from "@/components/refine-ui/layout/page-header";
+import { useQuery } from "@tanstack/react-query";
+import { supabaseAdmin, supabaseClient } from "@/lib";
+import { Skeleton } from "@/components/ui/skeleton";
 
+type OrderStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "PACKAGING"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "CANCELLED";
 
 export default function OrdersPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] =
-    useState("all");
+  const [selectedStatus, setSelectedStatus] = useState<
+    "all" | OrderStatus
+  >("all");
   const [sortBy, setSortBy] = useState("newest");
 
-  const filteredAndSortedOrders = useMemo(() => {
-    let result = [...MOCK_ORDERS];
+  // Fetch orders
+  const { data: ordersData, isLoading: orderLoading } =
+    useQuery({
+      queryKey: [
+        "orders",
+        searchTerm,
+        selectedStatus,
+        sortBy,
+      ],
+      queryFn: async () => {
+        let query = supabaseClient
+          .from("order")
+          .select("*")
+          .order("createdAt", {
+            ascending: sortBy === "oldest",
+          });
 
-    // Search filter
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(
-        (order) =>
-          order.id.toLowerCase().includes(term) ||
-          order.user.name.toLowerCase().includes(term) ||
-          order.user.email.toLowerCase().includes(term)
+        if (selectedStatus !== "all")
+          query = query.eq("orderStatus", selectedStatus);
+
+        if (searchTerm.trim()) {
+          const term = `%${searchTerm.toLowerCase()}%`;
+          query = query.or(`id.ilike.${term}`);
+        }
+
+        if (sortBy === "amount_high")
+          query = query.order("paymentTotal", {
+            ascending: false,
+          });
+        if (sortBy === "amount_low")
+          query = query.order("paymentTotal", {
+            ascending: true,
+          });
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return data;
+      },
+    });
+
+  const {
+    data: enrichedOrders,
+    isLoading: isEnrichedLoading,
+  } = useQuery({
+    queryKey: ["enrichedOrders", ordersData],
+    enabled: !!ordersData?.length,
+    queryFn: async () => {
+      if (!ordersData) return [];
+
+      // Cache for users to prevent multiple calls
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const userCache = new Map<string, any>();
+
+      async function getUserByIdCached(profileId: string) {
+        if (userCache.has(profileId))
+          return userCache.get(profileId);
+
+        const { data, error } =
+          await supabaseAdmin.auth.admin.getUserById(
+            profileId
+          );
+        if (!data || error) return null;
+
+        userCache.set(profileId, data.user);
+        return data.user;
+      }
+
+      return Promise.all(
+        ordersData.map(async (order) => {
+          const user = await getUserByIdCached(
+            order.profileId
+          );
+
+          // Fetch products for this order
+          const { data: productsData } =
+            await supabaseClient
+              .from("orderProduct")
+              .select("*")
+              .eq("orderId", order.id);
+
+          return {
+            ...order,
+            userEmail: user?.email || "Unknown",
+            userName:
+              user?.user_metadata?.name || "Unknown",
+            products: productsData || [],
+          };
+        })
       );
-    }
+    },
+  });
 
-    // Status filter
-    if (selectedStatus !== "all") {
-      result = result.filter(
-        (order) => order.orderStatus === selectedStatus
-      );
-    }
+  const isLoading = orderLoading || isEnrichedLoading;
 
-    // Sorting
-    switch (sortBy) {
-      case "newest":
-        result.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() -
-            new Date(a.createdAt).getTime()
-        );
-        break;
-      case "oldest":
-        result.sort(
-          (a, b) =>
-            new Date(a.createdAt).getTime() -
-            new Date(b.createdAt).getTime()
-        );
-        break;
-      case "amount_high":
-        result.sort(
-          (a, b) => b.paymentTotal - a.paymentTotal
-        );
-        break;
-      case "amount_low":
-        result.sort(
-          (a, b) => a.paymentTotal - b.paymentTotal
-        );
-        break;
-    }
-
-    return result;
-  }, [searchTerm, selectedStatus, sortBy]);
+  if (isLoading) return <OrdersPageLoader />;
 
   return (
     <div className="min-h-screen bg-background">
@@ -79,8 +134,7 @@ export default function OrdersPage() {
         {/* Header */}
         <PageHeader
           title="Orders"
-          subtitle="Manage and track all your customer orders in one
-            place"
+          subtitle="Manage and track all your customer orders in one place"
         />
 
         {/* Filters & Controls */}
@@ -91,7 +145,7 @@ export default function OrdersPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search by order ID, customer, email, or product..."
+                  placeholder="Search by..."
                   className="border-border bg-background pl-10 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary"
                   value={searchTerm}
                   onChange={(e) =>
@@ -105,10 +159,20 @@ export default function OrdersPage() {
             <div className="sm:col-span-3">
               <Select
                 value={selectedStatus}
-                onValueChange={setSelectedStatus}
+                onValueChange={(value) =>
+                  setSelectedStatus(
+                    value as "all" | OrderStatus
+                  )
+                }
               >
                 <SelectTrigger className="border-border bg-background text-foreground">
-                  <SelectValue />
+                  <SelectValue placeholder="All Statuses">
+                    {
+                      STATUS_OPTIONS.find(
+                        (s) => s.value === selectedStatus
+                      )?.label
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="border-border bg-card">
                   <SelectGroup>
@@ -200,10 +264,14 @@ export default function OrdersPage() {
         </Card>
 
         {/* Orders Table */}
-        <OrdersTable orders={filteredAndSortedOrders} />
+        <OrdersTable
+          orders={enrichedOrders || []}
+          isLoading={isLoading}
+          searchTerm={searchTerm}
+        />
 
         {/* No Results */}
-        {filteredAndSortedOrders.length === 0 && (
+        {!isLoading && enrichedOrders?.length === 0 && (
           <Card className="border-border bg-card p-12 text-center">
             <p className="text-sm text-muted-foreground">
               No orders found. Try adjusting your filters or
@@ -214,189 +282,12 @@ export default function OrdersPage() {
 
         {/* Results Count */}
         <div className="text-right text-sm text-muted-foreground">
-          Showing {filteredAndSortedOrders.length} of{" "}
-          {MOCK_ORDERS.length} orders
+          Showing {enrichedOrders?.length} orders
         </div>
       </div>
     </div>
   );
 }
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const MOCK_ORDERS: OrderRow[] = [
-  {
-    id: "a12f9c01-3d2b-4c6d-9a32-92c1e5abf101",
-    coupon: "NEWYEAR10",
-    createdAt: "2025-01-10T12:45:30.000Z",
-    updatedAt: "2025-01-10T12:45:30.000Z",
-    orderStatus: "PENDING",
-    paymentTotal: 2000,
-    discountedPrice: 1800, // 10% off
-    paymentMethod: "COD",
-    user: { name: "Rafid Hasan", email: "rafid@example.com" },
-    product: [
-      {
-        title: "Men's Classic Denim Jacket",
-        price: 1000,
-        thumbnail: "https://picsum.photos/seed/denimjacket/300",
-        quantity: 2,
-      },
-    ],
-  },
-  {
-    id: "c48e92d3-88a9-42c5-a20e-52fa912bc200",
-    coupon: null,
-    createdAt: "2025-01-12T09:12:10.000Z",
-    updatedAt: "2025-01-13T14:22:40.000Z",
-    orderStatus: "PROCESSING",
-    paymentTotal: 1600,
-    discountedPrice: 1600,
-    paymentMethod: "BKASH",
-    user: { name: "MD Nafizul Iqram", email: "nafizul@example.com" },
-    product: [
-      {
-        title: "Premium Cotton T-Shirt",
-        price: 1600,
-        thumbnail: "https://picsum.photos/seed/cottontshirt/300",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "d28a22dc-91a4-48df-bf90-82eab3bd2211",
-    coupon: "FLASH20",
-    createdAt: "2025-01-13T18:25:50.000Z",
-    updatedAt: "2025-01-14T10:00:10.000Z",
-    orderStatus: "PACKAGING",
-    paymentTotal: 3400,
-    discountedPrice: 2720, // 20% off
-    paymentMethod: "BKASH",
-    user: { name: "Sadia Chowdhury", email: "sadia@example.com" },
-    product: [
-      {
-        title: "Women's Winter Puffer Jacket",
-        price: 3400,
-        thumbnail: "https://picsum.photos/seed/pufferjacket/300",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "f92b1e76-212a-4a37-92fa-72bcfaeaa400",
-    coupon: null,
-    createdAt: "2025-01-14T11:55:00.000Z",
-    updatedAt: "2025-01-15T08:34:30.000Z",
-    orderStatus: "SHIPPED",
-    paymentTotal: 5500,
-    discountedPrice: 5500,
-    paymentMethod: "COD",
-    user: { name: "Arif Rahman", email: "arif@example.com" },
-    product: [
-      {
-        title: "Leather Bomber Jacket",
-        price: 5500,
-        thumbnail: "https://picsum.photos/seed/bomberjacket/300",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "e11c672f-5181-4b04-9e56-ae7f9003a588",
-    coupon: "SAVE50",
-    createdAt: "2025-01-15T15:20:10.000Z",
-    updatedAt: "2025-01-16T10:40:00.000Z",
-    orderStatus: "DELIVERED",
-    paymentTotal: 1000,
-    discountedPrice: 950, // small discount
-    paymentMethod: "BKASH",
-    user: { name: "Tanvir Ahmed", email: "tanvir@example.com" },
-    product: [
-      {
-        title: "Unisex Baseball Cap",
-        price: 1000,
-        thumbnail: "https://picsum.photos/seed/baseballcap/300",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "ab992d7c-7fc3-4f9f-b92f-c4c5232bb999",
-    coupon: null,
-    createdAt: "2025-01-15T19:22:10.000Z",
-    updatedAt: "2025-01-16T11:00:00.000Z",
-    orderStatus: "CANCELLED",
-    paymentTotal: 0,
-    discountedPrice: 0,
-    paymentMethod: "COD",
-    user: { name: "Mahmud Hossain", email: "mahmud@example.com" },
-    product: [
-      {
-        title: "Gaming Hoodie",
-        price: 2500,
-        thumbnail: "https://picsum.photos/seed/gaminghoodie/300",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "1f23df92-8ac2-4d21-b998-aaa1112bf001",
-    coupon: "WINTER15",
-    createdAt: "2025-01-17T10:20:15.000Z",
-    updatedAt: "2025-01-17T10:20:15.000Z",
-    orderStatus: "PENDING",
-    paymentTotal: 2500,
-    discountedPrice: 2125, // 15% off
-    paymentMethod: "BKASH",
-    user: { name: "Farhan Islam", email: "farhan@example.com" },
-    product: [
-      {
-        title: "Men's Woolen Hoodie",
-        price: 2500,
-        thumbnail: "https://picsum.photos/seed/woolhoodie/300",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "2bd498a1-1123-4ee7-9012-99dfb88cd002",
-    coupon: null,
-    createdAt: "2025-01-18T08:50:05.000Z",
-    updatedAt: "2025-01-18T09:30:15.000Z",
-    orderStatus: "PROCESSING",
-    paymentTotal: 1500,
-    discountedPrice: 1500,
-    paymentMethod: "COD",
-    user: { name: "Sajib Ahmed", email: "sajib@example.com" },
-    product: [
-      {
-        title: "Women’s Casual T-Shirt",
-        price: 1500,
-        thumbnail: "https://picsum.photos/seed/womentshirt/300",
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "3ef11abc-23dd-443d-91af-a1a1fbbcd003",
-    coupon: "FREESHIP",
-    createdAt: "2025-01-18T11:10:40.000Z",
-    updatedAt: "2025-01-18T11:10:40.000Z",
-    orderStatus: "PACKAGING",
-    paymentTotal: 2000,
-    discountedPrice: 2000,
-    paymentMethod: "BKASH",
-    user: { name: "Samiya Aktar", email: "samiya@example.com" },
-    product: [
-      {
-        title: "Women’s Long Coat",
-        price: 2000,
-        thumbnail: "https://picsum.photos/seed/womencoat/300",
-        quantity: 1,
-      },
-    ],
-  },
-];
-
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Newest First" },
@@ -413,4 +304,60 @@ const STATUS_OPTIONS = [
   { value: "SHIPPED", label: "Shipped" },
   { value: "DELIVERED", label: "Delivered" },
   { value: "CANCELLED", label: "Cancelled" },
-];
+] as const;
+
+function OrdersPageLoader() {
+  return (
+    <div className="min-h-screen bg-background animate-pulse">
+      <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:px-8">
+        {/* Page Header Skeleton */}
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-1/3 rounded-md" />{" "}
+          {/* Title */}
+          <Skeleton className="h-4 w-2/3 rounded-md" />{" "}
+          {/* Subtitle */}
+        </div>
+
+        {/* Filters & Controls Skeleton */}
+        <div className="border-border bg-card p-4 sm:p-6 space-y-4 rounded-xl">
+          <div className="grid gap-4 sm:grid-cols-12">
+            {/* Search */}
+            <Skeleton className="h-10 sm:col-span-5 rounded-md" />
+            {/* Status Filter */}
+            <Skeleton className="h-10 sm:col-span-3 rounded-md" />
+            {/* Sort */}
+            <Skeleton className="h-10 sm:col-span-2 rounded-md" />
+            {/* Export Button */}
+            <Skeleton className="h-10 sm:col-span-2 rounded-md" />
+          </div>
+        </div>
+
+        {/* Orders Table Skeleton */}
+        <div className="space-y-4">
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="grid grid-cols-12 gap-4 border-b border-border p-4 sm:p-6 rounded-xl bg-card"
+            >
+              <Skeleton className="col-span-2 h-4 rounded-md" />{" "}
+              {/* Order ID */}
+              <Skeleton className="col-span-3 h-4 rounded-md" />{" "}
+              {/* Customer */}
+              <Skeleton className="col-span-3 h-4 rounded-md" />{" "}
+              {/* Email */}
+              <Skeleton className="col-span-2 h-4 rounded-md" />{" "}
+              {/* Status */}
+              <Skeleton className="col-span-2 h-4 rounded-md" />{" "}
+              {/* Amount */}
+            </div>
+          ))}
+        </div>
+
+        {/* No Results / Footer Skeleton */}
+        <div className="flex justify-end space-x-2">
+          <Skeleton className="h-4 w-20 rounded-md" />
+        </div>
+      </div>
+    </div>
+  );
+}

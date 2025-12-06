@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Image,
 } from "@react-pdf/renderer";
-import { OrderRow } from "./order-table";
+import { EnrichedOrderRow } from "./order-table";
 
 const styles = StyleSheet.create({
   page: {
@@ -101,18 +101,17 @@ const styles = StyleSheet.create({
 export function OrderInvoicePDF({
   order,
 }: {
-  order: OrderRow;
+  order: EnrichedOrderRow;
 }) {
   const formattedDate = new Date(
     order.createdAt
   ).toLocaleDateString();
 
-  const subtotal = order.product.reduce(
-    (sum, p) => sum + p.price * p.quantity,
-    0
-  );
-  const discount = order.coupon ? 10 : 0;
-  const grandTotal = subtotal - discount;
+  // Calculate totals
+  const subtotal = order.paymentTotal - order.shippingCost; // assuming paymentTotal = subtotal + shipping - discount
+  const discount = subtotal - order.discountedPrice;
+  const grandTotal =
+    order.discountedPrice + order.shippingCost;
 
   return (
     <Document>
@@ -143,13 +142,13 @@ export function OrderInvoicePDF({
           <View style={styles.row}>
             <Text style={styles.label}>Name:</Text>
             <Text style={styles.value}>
-              {order.user.name}
+              {order.userName}
             </Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Email:</Text>
             <Text style={styles.value}>
-              {order.user.email}
+              {order.userEmail}
             </Text>
           </View>
           <View style={styles.row}>
@@ -200,14 +199,18 @@ export function OrderInvoicePDF({
               </Text>
             </View>
 
-            {order.product.map((product, idx) => (
+            {order.products.map((product, idx) => (
               <View key={idx} style={styles.tableRow}>
                 <View
                   style={[styles.tableCell, styles.col1]}
                 >
-                  {product.thumbnail && (
+                  {product.image && (
                     <Image
-                      src={product.thumbnail}
+                      src={`${
+                        import.meta.env.VITE_SUPABASE_URL
+                      }/storage/v1/object/public/${
+                        product.image
+                      }`}
                       style={{ width: 40, height: 40 }}
                     />
                   )}
@@ -220,7 +223,7 @@ export function OrderInvoicePDF({
                 <Text
                   style={[styles.tableCell, styles.col3]}
                 >
-                  ${product.price.toFixed(2)}
+                  ৳{product.price.toFixed(2)}
                 </Text>
                 <Text
                   style={[styles.tableCell, styles.col4]}
@@ -230,7 +233,7 @@ export function OrderInvoicePDF({
                 <Text
                   style={[styles.tableCell, styles.col5]}
                 >
-                  $
+                  ৳
                   {(
                     product.price * product.quantity
                   ).toFixed(2)}
@@ -245,7 +248,7 @@ export function OrderInvoicePDF({
               Subtotal:
             </Text>
             <Text style={styles.totalsValue}>
-              ${subtotal.toFixed(2)}
+              ৳{subtotal}
             </Text>
           </View>
           <View style={styles.totalsRow}>
@@ -253,7 +256,7 @@ export function OrderInvoicePDF({
               Discount:
             </Text>
             <Text style={styles.totalsValue}>
-              -${discount.toFixed(2)}
+              -৳{discount}
             </Text>
           </View>
           <View style={styles.totalsRow}>
@@ -271,7 +274,7 @@ export function OrderInvoicePDF({
                 styles.grandTotal,
               ]}
             >
-              ${grandTotal.toFixed(2)}
+              ৳{grandTotal}
             </Text>
           </View>
         </View>

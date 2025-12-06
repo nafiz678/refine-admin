@@ -19,75 +19,216 @@ import {
   FileText,
   CheckCircle,
   CircleDashed,
+  ArrowLeft,
+  Truck,
 } from "lucide-react";
-import { useParams } from "react-router";
-import { MOCK_ORDERS } from "./orders";
+import { Link, useParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { supabaseAdmin, supabaseClient } from "@/lib";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Database } from "@/lib/supabase";
 
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+// Types
+// type OrderStatus =
+//   | "PENDING"
+//   | "PROCESSING"
+//   | "PACKAGING"
+//   | "SHIPPED"
+//   | "DELIVERED"
+//   | "CANCELLED";
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-}
+export type OrderProduct =
+  Database["public"]["Tables"]["orderProduct"]["Row"];
+// {
+//   id: string;
+//   title: string;
+//   price: number;
+//   quantity: number;
+//   image: string;
+//   size: string;
+//   color: string;
+// }
 
-function getStatusColor(status: string) {
-  switch (status.toUpperCase()) {
-    case "PENDING":
-      // Soft warning tint
-      return "bg-[#E6F0F2] text-[#7296A4] border-[#CDDEE5]";
+type Coupon =
+  Database["content"]["Tables"]["coupons"]["Row"];
 
-    case "PROCESSING":
-      // Base tone for active state
-      return "bg-[#CDDEE5] text-[#4F7482] border-[#9EBECB]";
+// type OrderAddress =
+//   Database["public"]["Tables"]["orderAddress"]["Row"];
+// {
+//   id: string;
+//   address: string;
+//   upazila: string;
+//   district: string;
+//   division: string;
+//   zip: string;
+// }
 
-    case "SHIPPED":
-      // Slightly darker = movement/transition
-      return "bg-[#9EBECB] text-[#3B5A65] border-[#7296A4]";
-
-    case "DELIVERED":
-      // Success but within same palette
-      return "bg-[#7296A4] text-white border-[#5E7F8C]";
-
-    case "CANCELLED":
-      // Neutral-gray from your palette
-      return "bg-[#EFEFEF] text-[#6B6B6B] border-[#CDDEE5]";
-
-    default:
-      return "bg-muted text-muted-foreground";
-  }
-}
+// interface Order {
+//   id: string;
+//   coupon: string | null;
+//   discountedPrice: number;
+//   paymentTotal: number;
+//   paymentMethod: "COD" | "BKASH";
+//   orderStatus: OrderStatus;
+//   createdAt: string;
+//   updatedAt: string;
+//   shippingCost: number;
+//   user: {
+//     name: string;
+//     email: string;
+//   };
+//   products: OrderProduct[];
+//   address?: OrderAddress;
+//   couponData: Coupon;
+// }
 
 export function OrderSummary() {
   const { id } = useParams();
-  const order = MOCK_ORDERS.find(
-    (order) => order.id === id
-  );
+  // Fetch order with products and address
+  const { data: order, isLoading } = useQuery({
+    queryKey: ["order", id],
+    queryFn: async () => {
+      if (!id) return null;
+      // Fetch the order
+      const { data: orderData, error: orderError } =
+        await supabaseClient
+          .from("order")
+          .select("*")
+          .eq("id", id || "")
+          .single();
 
-  if (!order) return null;
+      if (orderError || !orderData) return null;
 
-  const discount =
-    order.product.reduce(
-      (acc, item) => acc + item.price * item.quantity,
-      0
-    ) - order.discountedPrice;
+      // Fetch products
+      const { data: productsData } = await supabaseClient
+        .from("orderProduct")
+        .select("*")
+        .eq("orderId", id || "");
 
-  const subtotal = order.product.reduce(
-    (acc, item) => acc + item.price * item.quantity,
+      // Fetch address
+      const { data: addressData } = await supabaseClient
+        .from("orderAddress")
+        .select("*")
+        .eq("orderId", id || "")
+        .single();
+
+      // Fetch user from Supabase Auth
+      const { data: userData } =
+        await supabaseAdmin.auth.admin.getUserById(
+          orderData.profileId
+        );
+
+      // Fetch coupon from content schema if coupon code exists
+      let couponData: Coupon | null = null;
+      if (orderData.coupon) {
+        const { data: cdata } = await supabaseClient
+          .schema("content")
+          .from("coupons")
+          .select("*")
+          .eq("code", orderData.coupon)
+          .single();
+        // if your coupons are under a different schema use .schema("content").from(...)
+        if (cdata) couponData = cdata;
+      }
+
+      return {
+        id: orderData.id,
+        coupon: orderData.coupon,
+        discountedPrice: orderData.discountedPrice,
+        paymentTotal: orderData.paymentTotal,
+        paymentMethod: orderData.paymentMethod,
+        orderStatus: orderData.orderStatus,
+        createdAt: orderData.createdAt,
+        updatedAt: orderData.updatedAt,
+        shippingCost: orderData.shippingCost,
+        user: {
+          name:
+            userData?.user?.user_metadata?.name ||
+            "Unknown",
+          email: userData?.user?.email || "Unknown",
+        },
+        products: productsData ?? [],
+        address: addressData ?? undefined,
+        couponData,
+      };
+    },
+  });
+
+  if (isLoading) return <OrderSummaryLoader />;
+  if (!order) return <p>Order not found</p>;
+
+  // ----- CALCULATIONS ----- //
+  // 1) subtotal from items (use discountedPrice when available)
+  const subtotal = order.products.reduce((acc, item) => {
+    const unit =
+      typeof item.price === "number"
+        ? item.price
+        : item.price;
+    return acc + Number(unit) * Number(item.quantity);
+  }, 0);
+  // 2) shipping cost: prefer explicit order.shippingCost, else 0
+  const shippingCost = Number(order.shippingCost ?? 0);
+
+  // 3) coupon determination & calculation
+  let couponApplied = false;
+  let couponDiscount = 0;
+  const now = new Date();
+
+  if (order.couponData) {
+    const c = order.couponData;
+    const start = c.startDate
+      ? new Date(c.startDate)
+      : null;
+    const end = c.endDate ? new Date(c.endDate) : null;
+
+    const withinDates =
+      (!start || now >= start) && (!end || now <= end);
+
+    const meetsMin =
+      typeof c.minCartValue === "number"
+        ? subtotal >= c.minCartValue
+        : true;
+
+    if (withinDates && meetsMin) {
+      // coupon valid: compute discount
+      if (c.couponType === "FIXED_AMOUNT") {
+        couponDiscount = Number(c.discountAmount ?? 0);
+      } else if (c.couponType === "PERCENTAGE") {
+        const pct = Number(c.discountPercentage ?? 0);
+        couponDiscount = Math.floor((subtotal * pct) / 100);
+      }
+
+      // Ensure discount doesn't exceed subtotal
+      if (couponDiscount > subtotal)
+        couponDiscount = subtotal;
+
+      if (couponDiscount > 0) couponApplied = true;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      couponApplied = false;
+      couponDiscount = 0;
+    }
+  }
+
+  // 4) totals
+  const totalBeforeShipping = Math.max(
+    subtotal - couponDiscount,
     0
   );
+  const finalTotal = totalBeforeShipping + shippingCost;
+
+  // For display: also keep discount as positive number for "You Saved"
+  const youSaved = couponDiscount;
 
   return (
     <div className="space-y-6">
+      <Link
+        to="/orders"
+        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-muted/50 hover:bg-muted rounded-md transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </Link>
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -113,27 +254,33 @@ export function OrderSummary() {
 
       {/* Two Column Layout */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column - Wider */}
+        {/* Left Column */}
         <div className="space-y-6 lg:col-span-2">
-          {/* Order Details Card */}
+          {/* Order Details */}
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Package className="h-5 w-5 text-primary" />
+                <Package className="h-5 w-5 text-primary" />{" "}
                 Order Details
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Product Info */}
-              {order.product.map((item, index) => (
-                <div key={index} className="flex gap-4">
+              {order.products.map((item) => (
+                <div key={item.id} className="flex gap-4">
                   <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-lg border bg-muted">
                     <img
-                      src={
-                        item.thumbnail || "/placeholder.svg"
-                      }
+                      src={`${
+                        import.meta.env.VITE_SUPABASE_URL
+                      }/storage/v1/object/public/${
+                        item.image
+                      }`}
                       alt={item.title}
                       className="object-cover"
+                      onError={(e) => {
+                        const target =
+                          e.currentTarget as HTMLImageElement;
+                        target.src = "/fallback.jpg";
+                      }}
                     />
                   </div>
                   <div className="flex flex-1 flex-col justify-center space-y-2">
@@ -143,20 +290,10 @@ export function OrderSummary() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">
-                          Original Price:
-                        </span>
-                        <span className="text-sm line-through text-muted-foreground">
-                          {formatCurrency(item.price)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                          Discounted Price:
+                          Price:
                         </span>
                         <span className="text-lg font-bold text-emerald-600">
-                          {formatCurrency(
-                            item.price * item.quantity
-                          )}
+                          ৳{item.price}
                         </span>
                       </div>
                     </div>
@@ -175,7 +312,7 @@ export function OrderSummary() {
                       Coupon Applied
                     </p>
                     <p className="font-semibold text-foreground">
-                      {order.coupon}
+                      {order.coupon || "None"}
                     </p>
                   </div>
                 </div>
@@ -197,7 +334,7 @@ export function OrderSummary() {
                       Payment Total
                     </p>
                     <p className="font-semibold text-foreground">
-                      {formatCurrency(order.paymentTotal)}
+                      ৳{order.paymentTotal}
                     </p>
                   </div>
                 </div>
@@ -208,7 +345,7 @@ export function OrderSummary() {
                       You Saved
                     </p>
                     <p className="font-semibold text-emerald-600">
-                      {formatCurrency(discount)}
+                      ৳{youSaved}
                     </p>
                   </div>
                 </div>
@@ -220,13 +357,13 @@ export function OrderSummary() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Clock className="h-5 w-5 text-primary" />
+                <Clock className="h-5 w-5 text-primary" />{" "}
                 Timeline & Status
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="relative space-y-6 pl-6 before:absolute before:left-[7px] before:top-2 before:h-[calc(100%-24px)] before:w-0.5 before:bg-border">
-                {/* Order Created */}
+                {/* Created */}
                 <div className="relative">
                   <div className="absolute -left-6 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500">
                     <div className="h-2 w-2 rounded-full bg-white" />
@@ -244,7 +381,7 @@ export function OrderSummary() {
                   </div>
                 </div>
 
-                {/* Last Updated */}
+                {/* Updated */}
                 <div className="relative">
                   <div className="absolute -left-6 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500">
                     <div className="h-2 w-2 rounded-full bg-white" />
@@ -294,7 +431,7 @@ export function OrderSummary() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <FileText className="h-5 w-5 text-primary" />
+                <FileText className="h-5 w-5 text-primary" />{" "}
                 Order Notes
               </CardTitle>
             </CardHeader>
@@ -312,7 +449,7 @@ export function OrderSummary() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <User className="h-5 w-5 text-primary" />
+                <User className="h-5 w-5 text-primary" />{" "}
                 Customer Information
               </CardTitle>
             </CardHeader>
@@ -352,9 +489,19 @@ export function OrderSummary() {
                   <p className="text-xs text-muted-foreground">
                     Shipping Address
                   </p>
-                  <p className="text-sm italic text-muted-foreground">
-                    No shipping address provided
-                  </p>
+                  {order.address ? (
+                    <p className="text-sm text-foreground">
+                      {order.address.address},{" "}
+                      {order.address.upazila},{" "}
+                      {order.address.district},{" "}
+                      {order.address.division},{" "}
+                      {order.address.zip}
+                    </p>
+                  ) : (
+                    <p className="text-sm italic text-muted-foreground">
+                      No shipping address provided
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -364,7 +511,7 @@ export function OrderSummary() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Receipt className="h-5 w-5 text-primary" />
+                <Receipt className="h-5 w-5 text-primary" />{" "}
                 Billing Information
               </CardTitle>
             </CardHeader>
@@ -383,16 +530,25 @@ export function OrderSummary() {
                   Subtotal
                 </span>
                 <span className="text-foreground">
-                  {formatCurrency(subtotal)}
+                  ৳{subtotal}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Tag className="h-3 w-3" />
-                  Coupon ({order.coupon})
+                  Coupon ({order.coupon || "None"})
                 </span>
                 <span className="text-emerald-600">
-                  -{formatCurrency(discount)}
+                  -৳{youSaved}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Truck className="h-3 w-3" />
+                  Shipping Cost
+                </span>
+                <span className="text-emerald-600">
+                  +৳{order.shippingCost}
                 </span>
               </div>
               <Separator />
@@ -401,12 +557,107 @@ export function OrderSummary() {
                   Total Amount
                 </span>
                 <span className="text-lg font-bold text-foreground">
-                  {formatCurrency(order.discountedPrice)}
+                  ৳{finalTotal}
                 </span>
               </div>
             </CardContent>
           </Card>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function getStatusColor(status: string) {
+  switch (status.toUpperCase()) {
+    case "PENDING":
+      // Soft warning tint
+      return "bg-[#E6F0F2] text-[#7296A4] border-[#CDDEE5]";
+
+    case "PROCESSING":
+      // Base tone for active state
+      return "bg-[#CDDEE5] text-[#4F7482] border-[#9EBECB]";
+
+    case "SHIPPED":
+      // Slightly darker = movement/transition
+      return "bg-[#9EBECB] text-[#3B5A65] border-[#7296A4]";
+
+    case "DELIVERED":
+      // Success but within same palette
+      return "bg-[#7296A4] text-white border-[#5E7F8C]";
+
+    case "CANCELLED":
+      // Neutral-gray from your palette
+      return "bg-[#EFEFEF] text-[#6B6B6B] border-[#CDDEE5]";
+
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
+
+function OrderSummaryLoader() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      {/* Header */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48 rounded-md" />{" "}
+          {/* Title */}
+          <Skeleton className="h-4 w-32 rounded-md" />{" "}
+          {/* Order ID */}
+        </div>
+        <Skeleton className="h-6 w-24 rounded-full" />{" "}
+        {/* Status Badge */}
+      </div>
+
+      {/* Two Column Layout */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left Column */}
+        <div className="space-y-6 lg:col-span-2">
+          {/* Order Details Card */}
+          <Skeleton className="h-64 w-full rounded-xl" />
+
+          {/* Timeline/Status Card */}
+          <Skeleton className="h-48 w-full rounded-xl" />
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* Notes Card */}
+          <Skeleton className="h-32 w-full rounded-xl" />
+
+          {/* Customer Info Card */}
+          <Skeleton className="h-48 w-full rounded-xl" />
+
+          {/* Billing Info Card */}
+          <Skeleton className="h-48 w-full rounded-xl" />
+        </div>
+      </div>
+
+      {/* Optional: Animate individual product rows in order details */}
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, idx) => (
+          <div key={idx} className="flex gap-4">
+            <Skeleton className="h-32 w-32 rounded-lg" />{" "}
+            {/* Product Image */}
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-6 w-1/2 rounded-md" />{" "}
+              {/* Product Title */}
+              <Skeleton className="h-4 w-1/3 rounded-md" />{" "}
+              {/* Product Price */}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

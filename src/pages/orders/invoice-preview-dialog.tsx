@@ -8,11 +8,11 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { OrderInvoicePDF } from "./invoice-pdf";
-import type { OrderRow } from "./order-table";
+import { EnrichedOrderRow } from "./order-table";
 
 interface InvoiceDrawerProps {
-  previewOrder: OrderRow | null;
-  setPreviewOrder: (order: OrderRow | null) => void;
+  previewOrder: EnrichedOrderRow | null;
+  setPreviewOrder: (order: EnrichedOrderRow | null) => void;
 }
 
 export default function InvoiceDrawer({
