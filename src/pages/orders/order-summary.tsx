@@ -21,6 +21,7 @@ import {
   CircleDashed,
   ArrowLeft,
   Truck,
+  Phone,
 } from "lucide-react";
 import { Link, useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -28,59 +29,10 @@ import { supabaseAdmin, supabaseClient } from "@/lib";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Database } from "@/lib/supabase";
 
-// Types
-// type OrderStatus =
-//   | "PENDING"
-//   | "PROCESSING"
-//   | "PACKAGING"
-//   | "SHIPPED"
-//   | "DELIVERED"
-//   | "CANCELLED";
-
 export type OrderProduct =
   Database["public"]["Tables"]["orderProduct"]["Row"];
-// {
-//   id: string;
-//   title: string;
-//   price: number;
-//   quantity: number;
-//   image: string;
-//   size: string;
-//   color: string;
-// }
-
 type Coupon =
   Database["content"]["Tables"]["coupons"]["Row"];
-
-// type OrderAddress =
-//   Database["public"]["Tables"]["orderAddress"]["Row"];
-// {
-//   id: string;
-//   address: string;
-//   upazila: string;
-//   district: string;
-//   division: string;
-//   zip: string;
-// }
-
-// interface Order {
-//   id: string;
-//   coupon: string | null;
-//   discountedPrice: number;
-//   paymentTotal: number;
-//   paymentMethod: "COD" | "BKASH";
-//   orderStatus: OrderStatus;
-//   createdAt: string;
-//   updatedAt: string;
-//   shippingCost: number;
-//   user: {
-//     name: string;
-//     email: string;
-//   };
-//   products: OrderProduct[];
-//   address?: OrderAddress;
-//   couponData: Coupon;
-// }
 
 export function OrderSummary() {
   const { id } = useParams();
@@ -150,6 +102,8 @@ export function OrderSummary() {
         products: productsData ?? [],
         address: addressData ?? undefined,
         couponData,
+        phone: orderData.paymentNumber,
+        notes: orderData.notes
       };
     },
   });
@@ -220,6 +174,8 @@ export function OrderSummary() {
   // For display: also keep discount as positive number for "You Saved"
   const youSaved = couponDiscount;
 
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
   return (
     <div className="space-y-6">
       <Link
@@ -265,41 +221,91 @@ export function OrderSummary() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {order.products.map((item) => (
-                <div key={item.id} className="flex gap-4">
-                  <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-lg border bg-muted">
-                    <img
-                      src={`${
-                        import.meta.env.VITE_SUPABASE_URL
-                      }/storage/v1/object/public/${
-                        item.image
-                      }`}
-                      alt={item.title}
-                      className="object-cover"
-                      onError={(e) => {
-                        const target =
-                          e.currentTarget as HTMLImageElement;
-                        target.src = "/fallback.jpg";
-                      }}
-                    />
-                  </div>
-                  <div className="flex flex-1 flex-col justify-center space-y-2">
-                    <h3 className="text-lg font-semibold text-foreground">
-                      {item.title} (x{item.quantity})
-                    </h3>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                          Price:
-                        </span>
-                        <span className="text-lg font-bold text-emerald-600">
-                          ৳{item.price}
-                        </span>
+              <div className="grid gap-8">
+                {order.products.map((item) => (
+                  <div
+                    key={item.id}
+                    className="group flex flex-col md:flex-row gap-8 p-6 rounded-2xl border bg-card transition-all hover:shadow-xl hover:shadow-black/3 dark:hover:shadow-white/2"
+                  >
+                    {/* Image Section */}
+                    <div className="relative h-56 w-full md:w-56 shrink-0 overflow-hidden rounded-xl bg-muted">
+                      <img
+                        src={`${supabaseUrl}/storage/v1/object/public/${item.image}`}
+                        alt={item.title}
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        onError={(e) => {
+                          const target =
+                            e.currentTarget as HTMLImageElement;
+                          target.src =
+                            "/premium-product-shot.jpg";
+                        }}
+                      />
+                    </div>
+
+                    {/* Content Section */}
+                    <div className="flex flex-1 flex-col py-2">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="space-y-1.5">
+                          <h3 className="text-2xl font-semibold tracking-tight text-foreground">
+                            {item.title}
+                          </h3>
+                        </div>
+                        <div className="flex flex-col sm:items-end">
+                          <span className="text-2xl font-light tracking-tight text-foreground">
+                            ৳{item.price.toLocaleString()}
+                          </span>
+                          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
+                            Per Unit
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Metadata Grid */}
+                      <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-6 pt-6 border-t border-border/50">
+                        {item.size && (
+                          <div className="space-y-1">
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                              Size
+                            </span>
+                            <p className="text-sm font-medium text-foreground">
+                              {item.size}
+                            </p>
+                          </div>
+                        )}
+                        {item.color && (
+                          <div className="space-y-1">
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                              Color
+                            </span>
+                            <p className="text-sm font-medium text-foreground capitalize">
+                              {item.color}
+                            </p>
+                          </div>
+                        )}
+                        <div className="space-y-1">
+                          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                            Quantity
+                          </span>
+                          <p className="text-sm font-medium text-foreground">
+                            ×{item.quantity}
+                          </p>
+                        </div>
+                        <div className="space-y-1 sm:text-end">
+                          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                            Subtotal
+                          </span>
+                          <p className="text-sm font-bold text-foreground">
+                            ৳
+                            {(
+                              item.price * item.quantity
+                            ).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
 
               <Separator />
 
@@ -429,7 +435,7 @@ export function OrderSummary() {
         <div className="space-y-6">
           {/* Notes Card */}
           <Card>
-            <CardHeader className="pb-4">
+            <CardHeader className="">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <FileText className="h-5 w-5 text-primary" />{" "}
                 Order Notes
@@ -438,8 +444,7 @@ export function OrderSummary() {
             <CardContent>
               <div className="rounded-lg border border-dashed bg-muted/30 p-4">
                 <p className="text-sm italic text-muted-foreground">
-                  No special instructions or notes provided
-                  for this order.
+                  {order.notes}
                 </p>
               </div>
             </CardContent>
@@ -480,6 +485,19 @@ export function OrderSummary() {
                   </p>
                 </div>
               </div>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                  <Phone className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    Phone
+                  </p>
+                  <p className="font-medium text-foreground">
+                    {order.phone}
+                  </p>
+                </div>
+              </div>
               <Separator />
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
@@ -492,9 +510,6 @@ export function OrderSummary() {
                   {order.address ? (
                     <p className="text-sm text-foreground">
                       {order.address.address},{" "}
-                      {order.address.upazila},{" "}
-                      {order.address.district},{" "}
-                      {order.address.division},{" "}
                       {order.address.zip}
                     </p>
                   ) : (
