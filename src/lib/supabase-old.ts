@@ -218,7 +218,6 @@ export type Database = {
           discountedPrice: number
           grandToken: string | null
           id: string
-          notes: string | null
           orderStatus: Database["public"]["Enums"]["orderStatus"]
           paymentId: string | null
           paymentMethod: Database["public"]["Enums"]["PaymentMethod"]
@@ -237,7 +236,6 @@ export type Database = {
           discountedPrice: number
           grandToken?: string | null
           id: string
-          notes?: string | null
           orderStatus: Database["public"]["Enums"]["orderStatus"]
           paymentId?: string | null
           paymentMethod: Database["public"]["Enums"]["PaymentMethod"]
@@ -256,7 +254,6 @@ export type Database = {
           discountedPrice?: number
           grandToken?: string | null
           id?: string
-          notes?: string | null
           orderStatus?: Database["public"]["Enums"]["orderStatus"]
           paymentId?: string | null
           paymentMethod?: Database["public"]["Enums"]["PaymentMethod"]
@@ -325,7 +322,7 @@ export type Database = {
           price: number
           productId: string
           quantity: number
-          size: Database["public"]["Enums"]["Size"]
+          size: string
           title: string
           updatedAt: string
           variantId: string
@@ -339,7 +336,7 @@ export type Database = {
           price: number
           productId: string
           quantity: number
-          size: Database["public"]["Enums"]["Size"]
+          size: string
           title: string
           updatedAt: string
           variantId?: string
@@ -353,7 +350,7 @@ export type Database = {
           price?: number
           productId?: string
           quantity?: number
-          size?: Database["public"]["Enums"]["Size"]
+          size?: string
           title?: string
           updatedAt?: string
           variantId?: string
