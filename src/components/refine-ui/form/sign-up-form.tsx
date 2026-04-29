@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 
 import { InputPassword } from "@/components/refine-ui/form/input-password";
@@ -29,8 +27,7 @@ import { Loader2 } from "lucide-react";
 export const SignUpForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -42,9 +39,7 @@ export const SignUpForm = () => {
 
   const { mutateAsync: register } = useRegister();
 
-  const handleSignUp = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -81,9 +76,7 @@ export const SignUpForm = () => {
       toast.success("User signed up successfully");
       navigate("/");
     } catch (error) {
-      toast.error(
-        "Unexpected error occurred during signup."
-      );
+      toast.error("Unexpected error occurred during signup.");
       console.error("Signup error:", error);
     } finally {
       setIsLoading(false);
@@ -98,24 +91,13 @@ export const SignUpForm = () => {
         "justify-center",
         "px-6",
         "py-8",
-        "min-h-svh"
+        "min-h-svh",
       )}
     >
-      <div
-        className={cn(
-          "flex",
-          "items-center",
-          "justify-center",
-          "gap-2"
-        )}
-      >
+      <div className={cn("flex", "items-center", "justify-center", "gap-2")}>
         {title.icon && (
           <div
-            className={cn(
-              "text-foreground",
-              "[&>svg]:w-12",
-              "[&>svg]:h-12"
-            )}
+            className={cn("text-foreground", "[&>svg]:w-12", "[&>svg]:h-12")}
           >
             {title.icon}
           </div>
@@ -129,16 +111,13 @@ export const SignUpForm = () => {
               "text-green-600",
               "dark:text-green-400",
               "text-3xl",
-              "font-semibold"
+              "font-semibold",
             )}
           >
             Sign up
           </CardTitle>
           <CardDescription
-            className={cn(
-              "text-muted-foreground",
-              "font-medium"
-            )}
+            className={cn("text-muted-foreground", "font-medium")}
           >
             Welcome to Millennial.
           </CardDescription>
@@ -148,9 +127,7 @@ export const SignUpForm = () => {
 
         <CardContent className={cn("px-0")}>
           <form onSubmit={handleSignUp}>
-            <div
-              className={cn("flex", "flex-col", "gap-2")}
-            >
+            <div className={cn("flex", "flex-col", "gap-2")}>
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -163,43 +140,25 @@ export const SignUpForm = () => {
             </div>
 
             <div
-              className={cn(
-                "relative",
-                "flex",
-                "flex-col",
-                "gap-2",
-                "mt-6"
-              )}
+              className={cn("relative", "flex", "flex-col", "gap-2", "mt-6")}
             >
               <Label htmlFor="password">Password</Label>
               <InputPassword
                 id="password"
                 value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value)
-                }
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
 
             <div
-              className={cn(
-                "relative",
-                "flex",
-                "flex-col",
-                "gap-2",
-                "mt-6"
-              )}
+              className={cn("relative", "flex", "flex-col", "gap-2", "mt-6")}
             >
-              <Label htmlFor="confirmPassword">
-                Confirm password
-              </Label>
+              <Label htmlFor="confirmPassword">Confirm password</Label>
               <InputPassword
                 id="confirmPassword"
                 value={confirmPassword}
-                onChange={(e) =>
-                  setConfirmPassword(e.target.value)
-                }
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
             </div>
@@ -225,15 +184,8 @@ export const SignUpForm = () => {
         <Separator />
 
         <CardFooter>
-          <div
-            className={cn("w-full", "text-center text-sm")}
-          >
-            <span
-              className={cn(
-                "text-sm",
-                "text-muted-foreground"
-              )}
-            >
+          <div className={cn("w-full", "text-center text-sm")}>
+            <span className={cn("text-sm", "text-muted-foreground")}>
               Have an account?{" "}
             </span>
             <Link
@@ -242,7 +194,7 @@ export const SignUpForm = () => {
                 "text-blue-600",
                 "dark:text-blue-400",
                 "font-semibold",
-                "underline"
+                "underline",
               )}
             >
               Sign in
