@@ -103,7 +103,7 @@ export function OrderSummary() {
         address: addressData ?? undefined,
         couponData,
         phone: orderData.paymentNumber,
-        notes: orderData.notes
+        notes: orderData.notes,
       };
     },
   });
@@ -252,7 +252,7 @@ export function OrderSummary() {
                         </div>
                         <div className="flex flex-col sm:items-end">
                           <span className="text-2xl font-light tracking-tight text-foreground">
-                            ৳{item.price.toLocaleString()}
+                            ৳{item.price}
                           </span>
                           <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
                             Per Unit
