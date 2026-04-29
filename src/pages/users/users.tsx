@@ -37,7 +37,7 @@ const UsersTablePage = () => {
         subtitle="Manage all the users here"
       />
       <div>
-        <UsersChart />
+        <UsersChart users={users}/>
 
         <UsersTable
           data={users}
