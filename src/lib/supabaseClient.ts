@@ -6,4 +6,4 @@ const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabaseRole = import.meta.env.VITE_SUPABASE_SECRET_SERVICE_ROLE;
 
 export const supabaseAdmin = createClient<Database>(SUPABASE_URL, supabaseRole);
-export const supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_KEY);
+export const supabaseClient = createClient<Database>(SUPABASE_URL,SUPABASE_KEY);
