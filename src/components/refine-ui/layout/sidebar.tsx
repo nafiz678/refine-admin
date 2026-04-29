@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -21,11 +19,7 @@ import {
   useSidebar as useShadcnSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import {
-  useLink,
-  useMenu,
-  type TreeMenuItem,
-} from "@refinedev/core";
+import { useLink, useMenu, type TreeMenuItem } from "@refinedev/core";
 import { ChevronRight, ListIcon } from "lucide-react";
 import React from "react";
 import { useTheme } from "../theme/theme-provider";
@@ -35,10 +29,7 @@ export function Sidebar() {
   const { menuItems, selectedKey } = useMenu();
 
   return (
-    <ShadcnSidebar
-      collapsible="icon"
-      className={cn("border-none")}
-    >
+    <ShadcnSidebar collapsible="icon" className={cn("border-none")}>
       <ShadcnSidebarRail />
       <SidebarHeader />
       <ShadcnSidebarContent
@@ -55,7 +46,7 @@ export function Sidebar() {
           {
             "px-3": open,
             "px-1": !open,
-          }
+          },
         )}
       >
         {menuItems.map((item: TreeMenuItem) => (
@@ -79,54 +70,25 @@ function SidebarItem({ item, selectedKey }: MenuItemProps) {
   const { open } = useShadcnSidebar();
 
   if (item.meta?.group) {
-    return (
-      <SidebarItemGroup
-        item={item}
-        selectedKey={selectedKey}
-      />
-    );
+    return <SidebarItemGroup item={item} selectedKey={selectedKey} />;
   }
 
   if (item.children && item.children.length > 0) {
     if (open) {
-      return (
-        <SidebarItemCollapsible
-          item={item}
-          selectedKey={selectedKey}
-        />
-      );
+      return <SidebarItemCollapsible item={item} selectedKey={selectedKey} />;
     }
-    return (
-      <SidebarItemDropdown
-        item={item}
-        selectedKey={selectedKey}
-      />
-    );
+    return <SidebarItemDropdown item={item} selectedKey={selectedKey} />;
   }
 
-  return (
-    <SidebarItemLink
-      item={item}
-      selectedKey={selectedKey}
-    />
-  );
+  return <SidebarItemLink item={item} selectedKey={selectedKey} />;
 }
 
-function SidebarItemGroup({
-  item,
-  selectedKey,
-}: MenuItemProps) {
+function SidebarItemGroup({ item, selectedKey }: MenuItemProps) {
   const { children } = item;
   const { open } = useShadcnSidebar();
 
   return (
-    <div
-      className={cn(
-        "border-t",
-        "border-sidebar-border",
-        "pt-4"
-      )}
-    >
+    <div className={cn("border-t", "border-sidebar-border", "pt-4")}>
       <span
         className={cn(
           "ml-3",
@@ -144,7 +106,7 @@ function SidebarItemGroup({
             "opacity-100": open,
             "pointer-events-none": !open,
             "pointer-events-auto": open,
-          }
+          },
         )}
       >
         {getDisplayName(item)}
@@ -164,10 +126,7 @@ function SidebarItemGroup({
   );
 }
 
-function SidebarItemCollapsible({
-  item,
-  selectedKey,
-}: MenuItemProps) {
+function SidebarItemCollapsible({ item, selectedKey }: MenuItemProps) {
   const { name, children } = item;
 
   const chevronIcon = (
@@ -179,25 +138,17 @@ function SidebarItemCollapsible({
         "text-muted-foreground",
         "transition-transform",
         "duration-200",
-        "group-data-[state=open]:rotate-90"
+        "group-data-[state=open]:rotate-90",
       )}
     />
   );
 
   return (
-    <Collapsible
-      key={`collapsible-${name}`}
-      className={cn("w-full", "group")}
-    >
+    <Collapsible key={`collapsible-${name}`} className={cn("w-full", "group")}>
       <CollapsibleTrigger asChild>
-        <SidebarButton
-          item={item}
-          rightIcon={chevronIcon}
-        />
+        <SidebarButton item={item} rightIcon={chevronIcon} />
       </CollapsibleTrigger>
-      <CollapsibleContent
-        className={cn("ml-6", "flex", "flex-col", "gap-2")}
-      >
+      <CollapsibleContent className={cn("ml-6", "flex", "flex-col", "gap-2")}>
         {children?.map((child: TreeMenuItem) => (
           <SidebarItem
             key={child.key || child.name}
@@ -210,10 +161,7 @@ function SidebarItemCollapsible({
   );
 }
 
-function SidebarItemDropdown({
-  item,
-  selectedKey,
-}: MenuItemProps) {
+function SidebarItemDropdown({ item, selectedKey }: MenuItemProps) {
   const { children } = item;
   const Link = useLink();
 
@@ -228,19 +176,12 @@ function SidebarItemDropdown({
           const isSelected = childKey === selectedKey;
 
           return (
-            <DropdownMenuItem
-              key={childKey || child.name}
-              asChild
-            >
+            <DropdownMenuItem key={childKey || child.name} asChild>
               <Link
                 to={child.route || ""}
-                className={cn(
-                  "flex w-full items-center gap-2",
-                  {
-                    "bg-accent text-accent-foreground":
-                      isSelected,
-                  }
-                )}
+                className={cn("flex w-full items-center gap-2", {
+                  "bg-accent text-accent-foreground": isSelected,
+                })}
               >
                 <ItemIcon
                   icon={child.meta?.icon ?? child.icon}
@@ -256,24 +197,15 @@ function SidebarItemDropdown({
   );
 }
 
-function SidebarItemLink({
-  item,
-  selectedKey,
-}: MenuItemProps) {
+function SidebarItemLink({ item, selectedKey }: MenuItemProps) {
   const isSelected = item.key === selectedKey;
 
-  return (
-    <SidebarButton
-      item={item}
-      isSelected={isSelected}
-      asLink={true}
-    />
-  );
+  return <SidebarButton item={item} isSelected={isSelected} asLink={true} />;
 }
 
 function SidebarHeader() {
   const { open, isMobile } = useShadcnSidebar();
-  const {theme} = useTheme(); 
+  const { theme } = useTheme();
 
   return (
     <ShadcnSidebarHeader
@@ -285,7 +217,7 @@ function SidebarHeader() {
         "flex-row",
         "items-center",
         "justify-between",
-        "overflow-hidden"
+        "overflow-hidden",
       )}
     >
       <div
@@ -302,7 +234,7 @@ function SidebarHeader() {
           {
             "pl-0": !open,
             "pl-5": open,
-          }
+          },
         )}
       >
         <div className="w-full">
@@ -315,7 +247,7 @@ function SidebarHeader() {
           >
             <path
               d="M13.72 6.73v16.55l-2.16-1.67V5.07zm-3.08-2.37v16.55l-2.16-1.67V2.7zm6.15 3.55v12.63l-1.08.83-1.08-.83V7.91zm3.08-2.7v16.55l-2.16 1.66V6.87zm3.07-2.37v16.55l-2.15 1.66V4.5z"
-              style={{fill: theme === "dark" ? "#f7f7f7" : "#606060"}}
+              style={{ fill: theme === "dark" ? "#f7f7f7" : "#606060" }}
             />
           </svg>
         </div>
@@ -328,7 +260,7 @@ function SidebarHeader() {
             {
               // "opacity-0": !open,
               "opacity-100": open,
-            }
+            },
           )}
         >
           Millennial Clothing
@@ -336,12 +268,16 @@ function SidebarHeader() {
       </div>
 
       <ShadcnSidebarTrigger
-        className={cn("text-muted-foreground transition-opacity duration-300", "mr-1.5 ", {
-          "opacity-0": !open,
-          "opacity-100": open || isMobile,
-          "pointer-events-auto": open || isMobile,
-          "pointer-events-none": !open && !isMobile,
-        })}
+        className={cn(
+          "text-muted-foreground transition-opacity duration-300",
+          "mr-1.5 ",
+          {
+            "opacity-0": !open,
+            "opacity-100": open || isMobile,
+            "pointer-events-auto": open || isMobile,
+            "pointer-events-none": !open && !isMobile,
+          },
+        )}
       />
     </ShadcnSidebarHeader>
   );
@@ -369,9 +305,7 @@ function ItemIcon({ icon, isSelected }: IconProps) {
   );
 }
 
-type SidebarButtonProps = React.ComponentProps<
-  typeof Button
-> & {
+type SidebarButtonProps = React.ComponentProps<typeof Button> & {
   item: TreeMenuItem;
   isSelected?: boolean;
   rightIcon?: React.ReactNode;
@@ -392,10 +326,7 @@ function SidebarButton({
 
   const buttonContent = (
     <>
-      <ItemIcon
-        icon={item.meta?.icon ?? item.icon}
-        isSelected={isSelected}
-      />
+      <ItemIcon icon={item.meta?.icon ?? item.icon} isSelected={isSelected} />
       <span
         className={cn("tracking-[-0.00875rem]", {
           "flex-1": rightIcon,
@@ -425,19 +356,15 @@ function SidebarButton({
           "bg-sidebar-primary": isSelected,
           "hover:bg-sidebar-primary/90!": isSelected,
           "text-sidebar-primary-foreground": isSelected,
-          "hover:text-sidebar-primary-foreground":
-            isSelected,
+          "hover:text-sidebar-primary-foreground": isSelected,
         },
-        className
+        className,
       )}
       onClick={onClick}
       {...props}
     >
       {asLink && item.route ? (
-        <Link
-          to={item.route}
-          className={cn("flex w-full items-center gap-2")}
-        >
+        <Link to={item.route} className={cn("flex w-full items-center gap-2")}>
           {buttonContent}
         </Link>
       ) : (
