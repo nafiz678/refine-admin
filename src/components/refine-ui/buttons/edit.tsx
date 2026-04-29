@@ -1,10 +1,5 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
-import {
-  type BaseKey,
-  useEditButton,
-} from "@refinedev/core";
+import { type BaseKey, useEditButton } from "@refinedev/core";
 import { Pen } from "lucide-react";
 import React from "react";
 
@@ -38,24 +33,15 @@ export const EditButton = React.forwardRef<
   EditButtonProps
 >(
   (
-    {
+    { resource, recordItemId, accessControl, meta, children, onClick, ...rest },
+    ref,
+  ) => {
+    const { hidden, disabled, LinkComponent, to, label } = useEditButton({
       resource,
-      recordItemId,
+      id: recordItemId,
       accessControl,
       meta,
-      children,
-      onClick,
-      ...rest
-    },
-    ref
-  ) => {
-    const { hidden, disabled, LinkComponent, to, label } =
-      useEditButton({
-        resource,
-        id: recordItemId,
-        accessControl,
-        meta,
-      });
+    });
 
     const isDisabled = disabled || rest.disabled;
     const isHidden = hidden || rest.hidden;
@@ -74,9 +60,7 @@ export const EditButton = React.forwardRef<
         <LinkComponent
           to={to}
           replace={false}
-          onClick={(
-            e: React.PointerEvent<HTMLButtonElement>
-          ) => {
+          onClick={(e: React.PointerEvent<HTMLButtonElement>) => {
             if (isDisabled) {
               e.preventDefault();
               return;
@@ -89,14 +73,14 @@ export const EditButton = React.forwardRef<
         >
           {children ?? (
             <div className="flex items-center gap-2 p-0">
-              <Pen/>
+              <Pen />
               <span>{label}</span>
             </div>
           )}
         </LinkComponent>
       </Button>
     );
-  }
+  },
 );
 
 EditButton.displayName = "EditButton";
