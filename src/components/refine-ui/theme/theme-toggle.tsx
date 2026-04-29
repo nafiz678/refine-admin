@@ -1,5 +1,3 @@
-"use client";
-
 import { useTheme } from "@/components/refine-ui/theme/theme-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -9,9 +7,7 @@ type ThemeToggleProps = {
   className?: string;
 };
 
-export function ThemeToggle({
-  className,
-}: ThemeToggleProps) {
+export function ThemeToggle({ className }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
 
   const cycleTheme = () => {
@@ -35,7 +31,7 @@ export function ThemeToggle({
         "bg-transparent",
         className,
         "h-10",
-        "w-10"
+        "w-10",
       )}
     >
       <Sun
@@ -47,9 +43,8 @@ export function ThemeToggle({
           "transition-all",
           "duration-200",
           {
-            "-rotate-90 scale-0":
-              theme === "dark" || theme === "system",
-          }
+            "-rotate-90 scale-0": theme === "dark" || theme === "system",
+          },
         )}
       />
       <Moon
@@ -63,14 +58,11 @@ export function ThemeToggle({
           "duration-200",
           {
             "rotate-0 scale-100": theme === "dark",
-            "rotate-90 scale-0":
-              theme === "light" || theme === "system",
-          }
+            "rotate-90 scale-0": theme === "light" || theme === "system",
+          },
         )}
       />
-      <span className="sr-only">
-        Toggle theme (Light → Dark )
-      </span>
+      <span className="sr-only">Toggle theme (Light → Dark )</span>
     </Button>
   );
 }

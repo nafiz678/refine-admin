@@ -1,5 +1,3 @@
-"use client";
-
 import { Header } from "@/components/refine-ui/layout/header";
 import { ThemeProvider } from "@/components/refine-ui/theme/theme-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -29,7 +27,7 @@ export function Layout({ children }: PropsWithChildren) {
               "md:p-4",
               "lg:px-6",
               "lg:pt-6",
-              "selection:bg-foreground selection:text-background"
+              "selection:bg-foreground selection:text-background",
             )}
           >
             {children}

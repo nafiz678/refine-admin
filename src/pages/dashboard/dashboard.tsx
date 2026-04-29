@@ -1,7 +1,5 @@
-import React, { Suspense } from "react";
-import DashboardSectionOne from "./dashboard-section-one";
-import DashBoardSectionTwo from "./dashboard-section-two";
-import { DashboardChat } from "./dashboard-charts";
+import { Suspense } from "react";
+import { DashboardShell } from "./new/dashboard-shell";
 
 export default function Dashboard() {
   return (
@@ -13,18 +11,8 @@ export default function Dashboard() {
           </div>
         }
       >
-        <DashboardSectionOne />
+        <DashboardShell />
       </Suspense>
-      <Suspense
-        fallback={
-          <div className="text-center py-10">
-            Loading charts...
-          </div>
-        }
-      >
-        <DashBoardSectionTwo />
-      </Suspense>
-      <DashboardChat />
     </section>
   );
 }

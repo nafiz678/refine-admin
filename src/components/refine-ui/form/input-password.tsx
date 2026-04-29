@@ -1,5 +1,3 @@
-"use client";
-
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
@@ -21,7 +19,7 @@ export const InputPassword = ({ className, ...props }: InputPasswordProps) => {
         type="button"
         className={cn(
           "appearance-none",
-          "absolute right-3 top-1/2 -translate-y-1/2"
+          "absolute right-3 top-1/2 -translate-y-1/2",
         )}
         onClick={() => setShowPassword(!showPassword)}
       >

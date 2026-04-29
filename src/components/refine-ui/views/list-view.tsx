@@ -1,5 +1,3 @@
-"use client";
-
 import type { PropsWithChildren } from "react";
 
 import { CreateButton } from "@/components/refine-ui/buttons/create";
@@ -46,7 +44,7 @@ export const ListViewHeader = ({
     titleFromProps ??
     getUserFriendlyName(
       resource?.meta?.label ?? identifier ?? resource?.name,
-      "plural"
+      "plural",
     );
 
   return (

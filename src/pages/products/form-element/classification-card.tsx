@@ -1,4 +1,4 @@
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, useWatch } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -23,30 +23,52 @@ import {
 import { supabaseClient } from "@/lib";
 import { useQuery } from "@tanstack/react-query";
 import { ProductFormData } from "../product-form";
+import { useEffect, useMemo, useRef } from "react";
 
 interface ClassificationCardProps {
   form: UseFormReturn<ProductFormData>;
 }
 
-export function ClassificationCard({
-  form,
-}: ClassificationCardProps) {
-  const { data: category } = useQuery({
+export function ClassificationCard({ form }: ClassificationCardProps) {
+  const selectedCategoryId = useWatch({
+    control: form.control,
+    name: "categoryId",
+  });
+
+  const selectedSubCategoryId = useWatch({
+    control: form.control,
+    name: "subCategoryId",
+  });
+
+  const previousCategoryRef = useRef<string | undefined>(undefined);
+
+  const { data: category, isLoading: isCategoryLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
       const { data, error } = await supabaseClient
         .from("category")
-        .select("*");
+        .select("id, name")
+        .order("name", { ascending: true });
       if (error) throw error;
       return data;
     },
   });
-  const { data: subCategory } = useQuery({
-    queryKey: ["subCategory"],
+
+  const {
+    data: subCategory = [],
+    isLoading: isSubCategoryLoading,
+    isFetched: isSubCategoryFetched,
+  } = useQuery({
+    queryKey: ["subCategory", selectedCategoryId],
     queryFn: async () => {
+      if (!selectedCategoryId) return [];
+
       const { data, error } = await supabaseClient
         .from("subCategory")
-        .select("*");
+        .select("id, name, categoryId")
+        .eq("categoryId", selectedCategoryId)
+        .order("name", { ascending: true });
+
       if (error) throw error;
       return data;
     },
@@ -58,21 +80,66 @@ export function ClassificationCard({
       const { data, error } = await supabaseClient
         .schema("content")
         .from("collection")
-        .select("*");
+        .select("id, title")
+        .order("title", { ascending: true });
       if (error) throw error;
       return data;
     },
   });
 
+  const validSubCategoryIds = useMemo(() => {
+    return new Set(subCategory.map((item) => item.id));
+  }, [subCategory]);
+
+  useEffect(() => {
+    const previousCategoryId = previousCategoryRef.current;
+    const categoryChanged =
+      previousCategoryId !== undefined &&
+      previousCategoryId !== selectedCategoryId;
+
+    if (!selectedCategoryId) {
+      if (selectedSubCategoryId) {
+        form.setValue("subCategoryId", "", {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+      previousCategoryRef.current = selectedCategoryId;
+      return;
+    }
+
+    if (!isSubCategoryFetched || isSubCategoryLoading) {
+      previousCategoryRef.current = selectedCategoryId;
+      return;
+    }
+
+    if (
+      selectedSubCategoryId &&
+      !validSubCategoryIds.has(selectedSubCategoryId)
+    ) {
+      form.setValue("subCategoryId", "", {
+        shouldDirty: categoryChanged,
+        shouldValidate: true,
+      });
+    }
+
+    previousCategoryRef.current = selectedCategoryId;
+  }, [
+    selectedCategoryId,
+    selectedSubCategoryId,
+    validSubCategoryIds,
+    isSubCategoryFetched,
+    isSubCategoryLoading,
+    form,
+  ]);
+
+  const isSubCategoryDisabled = !selectedCategoryId || isSubCategoryLoading;
+
   return (
     <Card className="border-border/50 shadow-sm">
       <CardHeader>
-        <CardTitle className="text-xl">
-          Classification
-        </CardTitle>
-        <CardDescription>
-          Categorize your product
-        </CardDescription>
+        <CardTitle className="text-xl">Classification</CardTitle>
+        <CardDescription>Categorize your product</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -86,8 +153,18 @@ export function ClassificationCard({
                 <FormLabel>Category</FormLabel>
                 <FormControl>
                   <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
+                    value={field.value || ""}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+
+                      if (value !== selectedCategoryId) {
+                        form.setValue("subCategoryId", "", {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }
+                    }}
+                    disabled={isCategoryLoading}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a Category" />
@@ -116,20 +193,32 @@ export function ClassificationCard({
                 <FormControl>
                   <Select
                     onValueChange={field.onChange}
-                    value={field.value}
+                    value={field.value || ""}
+                    disabled={isSubCategoryDisabled}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a Sub-Category" />
+                      <SelectValue
+                        placeholder={
+                          !selectedCategoryId
+                            ? "Select a category first"
+                            : isSubCategoryLoading
+                              ? "Loading sub-categories..."
+                              : "Select a Sub-Category"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      {subCategory?.map((sc) => (
-                        <SelectItem
-                          key={sc.id}
-                          value={sc.id}
-                        >
-                          {sc.name}
+                      {subCategory.length > 0 ? (
+                        subCategory.map((sc) => (
+                          <SelectItem key={sc.id} value={sc.id}>
+                            {sc.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="__empty" disabled>
+                          No sub-categories found
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </FormControl>
@@ -148,25 +237,18 @@ export function ClassificationCard({
               <FormItem>
                 <FormLabel>Department</FormLabel>
                 <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select Department" />
                     </SelectTrigger>
                     <SelectContent>
-                      {[
-                        "MENS",
-                        "WOMENS",
-                        "KIDS",
-                        "UNISEX",
-                        "COUPLE",
-                      ].map((d) => (
-                        <SelectItem key={d} value={d}>
-                          {d}
-                        </SelectItem>
-                      ))}
+                      {["MENS", "WOMENS", "KIDS", "UNISEX", "COUPLE"].map(
+                        (d) => (
+                          <SelectItem key={d} value={d}>
+                            {d}
+                          </SelectItem>
+                        ),
+                      )}
                     </SelectContent>
                   </Select>
                 </FormControl>
@@ -191,10 +273,7 @@ export function ClassificationCard({
                     </SelectTrigger>
                     <SelectContent>
                       {collections?.map((cl) => (
-                        <SelectItem
-                          key={cl.id}
-                          value={cl.id}
-                        >
+                        <SelectItem key={cl.id} value={cl.id}>
                           {cl.title}
                         </SelectItem>
                       ))}

@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Breadcrumb as ShadcnBreadcrumb,
   BreadcrumbItem as ShadcnBreadcrumbItem,

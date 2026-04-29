@@ -19,6 +19,13 @@ import { BannerProp } from "./banner-list";
 import { supabaseClient } from "@/lib";
 import { QueryObserverResult } from "@tanstack/react-query";
 import { BannerImageCropper } from "./banner-image-cropper";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type RefetchType = () => Promise<QueryObserverResult>;
 
@@ -35,12 +42,9 @@ const BannerForm = ({
 }: BannerFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const [selectedFile, setSelectedFile] =
-    useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [cropperOpen, setCropperOpen] = useState(false);
-  const [croppedBlobs, setCroppedBlobs] = useState<Blob[]>(
-    []
-  );
+  const [croppedBlobs, setCroppedBlobs] = useState<Blob[]>([]);
 
   const form = useForm<BannerProp>({
     defaultValues: bannerInfo ?? {
@@ -52,6 +56,7 @@ const BannerForm = ({
       multipleImages: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      banner_type: null,
     },
   });
 
@@ -87,24 +92,16 @@ const BannerForm = ({
   };
 
   // Handle cropped image
-  const handleCropped = (
-    previewUrl: string,
-    blob: Blob
-  ) => {
-    form.setValue(
-      "images",
-      [...form.getValues("images"), previewUrl],
-      { shouldDirty: true }
-    );
+  const handleCropped = (previewUrl: string, blob: Blob) => {
+    form.setValue("images", [...form.getValues("images"), previewUrl], {
+      shouldDirty: true,
+    });
     setCroppedBlobs([...croppedBlobs, blob]);
     toast.success("Image cropped successfully!");
   };
 
   // Upload a single image to Supabase storage
-  const uploadImage = async (
-    blob: Blob,
-    fileName: string
-  ): Promise<string> => {
+  const uploadImage = async (blob: Blob, fileName: string): Promise<string> => {
     const { data, error } = await supabaseClient.storage
       .from("content")
       .upload(fileName, blob, {
@@ -118,11 +115,7 @@ const BannerForm = ({
   };
 
   const onSubmit = async (values: BannerProp) => {
-    if (
-      !values.images ||
-      values.images.length === 0 ||
-      !croppedBlobs.length
-    ) {
+    if (!values.images || values.images.length === 0 || !croppedBlobs.length) {
       toast.error("Please upload one banner image.");
       return;
     }
@@ -163,9 +156,7 @@ const BannerForm = ({
         const { error } = await supabaseClient
           .schema("content")
           .from("banner")
-          .insert([
-            { ...payload, id: Date.now().toString(36) },
-          ]);
+          .insert([{ ...payload, id: Date.now().toString(36) }]);
 
         if (error) throw error;
         toast.success("Banner created!");
@@ -194,120 +185,146 @@ const BannerForm = ({
 
       <Form {...form}>
         <form
-          className="space-y-4 w-full"
+          className="w-full flex max-h-[85vh] flex-col"
           onSubmit={form.handleSubmit(onSubmit)}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="title"
-              rules={{ required: "Title is required" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter title"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Your banner title
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <div className="flex-1 overflow-y-auto space-y-4 pl-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="title"
+                rules={{ required: "Title is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter title" {...field} />
+                    </FormControl>
+                    <FormDescription>Your banner title</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="link"
-              rules={{ required: "Link is required" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Link</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter URL"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Optional banner link
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    className="resize-none"
-                    {...field}
-                    value={field.value ?? ""}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Describe your banner
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Image List */}
-          <div className="space-y-2">
-            <div className="grid grid-cols-2 gap-3">
-              {form.watch("images").map((img, idx) => (
-                <div key={idx} className="relative">
-                  <img
-                    src={`${
-                      import.meta.env.VITE_SUPABASE_URL
-                    }/storage/v1/object/public/${img}`}
-                    className="aspect-video h-28 w-full rounded-md object-cover"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-1 right-1"
-                    type="button"
-                    onClick={() => removeImage(idx)}
-                  >
-                    <X className="size-4" />
-                  </Button>
-                </div>
-              ))}
+              <FormField
+                control={form.control}
+                name="banner_type"
+                rules={{ required: "Banner type is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Banner Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value || ""}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select banner type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="primary">primary</SelectItem>
+                        <SelectItem value="secondary_left">
+                          secondary_left
+                        </SelectItem>
+                        <SelectItem value="secondary_right">
+                          secondary_right
+                        </SelectItem>
+                        <SelectItem value="secondary_middle">
+                          secondary_middle
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Select banner type</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            {/* Upload */}
-            <Label
-              htmlFor="banner-upload"
-              className="flex aspect-video h-28 w-full items-center justify-center rounded-md border border-dashed cursor-pointer"
-            >
-              <Upload className="text-muted-foreground size-4" />
-            </Label>
+            <div className="grid grid-cols-1 gap-4">
+              <FormField
+                control={form.control}
+                name="link"
+                rules={{ required: "Link is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Link</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter URL" {...field} />
+                    </FormControl>
+                    <FormDescription>Optional banner link</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <Input
-              id="banner-upload"
-              type="file"
-              className="hidden"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleFileSelect(file);
-              }}
-            />
+              <div>
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          className="resize-none"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormDescription>Describe your banner</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-3">
+                {form.watch("images").map((img, idx) => (
+                  <div key={idx} className="relative">
+                    <img
+                      src={`${
+                        import.meta.env.VITE_SUPABASE_URL
+                      }/storage/v1/object/public/${img}`}
+                      className="aspect-video h-28 w-full rounded-md object-cover"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-1 right-1"
+                      type="button"
+                      onClick={() => removeImage(idx)}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              <Label
+                htmlFor="banner-upload"
+                className="flex aspect-video h-28 w-full items-center justify-center rounded-md border border-dashed cursor-pointer"
+              >
+                <Upload className="text-muted-foreground size-4" />
+              </Label>
+
+              <Input
+                id="banner-upload"
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelect(file);
+                }}
+              />
+            </div>
           </div>
 
-          {/* Form Buttons */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-4 border-t bg-background">
             <Button type="submit" disabled={isLoading}>
               {bannerInfo ? "Update" : "Create"} Banner
             </Button>

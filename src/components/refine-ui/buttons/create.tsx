@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { type BaseKey, useCreateButton } from "@refinedev/core";
 import { Plus } from "lucide-react";

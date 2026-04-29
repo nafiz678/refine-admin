@@ -1,5 +1,3 @@
-"use client";
-
 import type { PropsWithChildren } from "react";
 
 import { RefreshButton } from "@/components/refine-ui/buttons/refresh";
@@ -53,7 +51,7 @@ export const ShowViewHeader = ({
     titleFromProps ??
     getUserFriendlyName(
       resource?.meta?.label ?? identifier ?? resource?.name,
-      "singular"
+      "singular",
     );
 
   return (
@@ -71,7 +69,7 @@ export const ShowViewHeader = ({
           "items-center",
           "justify-between",
           "-ml-2.5",
-          headerClassName
+          headerClassName,
         )}
       >
         <div className="flex items-center gap-1">

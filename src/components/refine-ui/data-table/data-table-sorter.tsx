@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Column } from "@tanstack/react-table";
@@ -18,8 +16,8 @@ export function DataTableSorter<TData>({
     column.getIsSorted() === "desc"
       ? `Sort by ${column.id} as descending`
       : column.getIsSorted() === "asc"
-      ? `Sort by ${column.id} as ascending`
-      : `Sort by ${column.id}`;
+        ? `Sort by ${column.id} as ascending`
+        : `Sort by ${column.id}`;
 
   return (
     <Button

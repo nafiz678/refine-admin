@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       banner: {
         Row: {
+          banner_type: Database["content"]["Enums"]["banner_type"] | null
           createdAt: string
           description: string | null
           id: string
@@ -26,6 +27,7 @@ export type Database = {
           updatedAt: string
         }
         Insert: {
+          banner_type?: Database["content"]["Enums"]["banner_type"] | null
           createdAt?: string
           description?: string | null
           id: string
@@ -36,6 +38,7 @@ export type Database = {
           updatedAt: string
         }
         Update: {
+          banner_type?: Database["content"]["Enums"]["banner_type"] | null
           createdAt?: string
           description?: string | null
           id?: string
@@ -121,6 +124,11 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      banner_type:
+        | "primary"
+        | "secondary_left"
+        | "secondary_middle"
+        | "secondary_right"
       CouponType: "PERCENTAGE" | "FIXED_AMOUNT"
     }
     CompositeTypes: {
@@ -686,6 +694,12 @@ export type CompositeTypes<
 export const Constants = {
   content: {
     Enums: {
+      banner_type: [
+        "primary",
+        "secondary_left",
+        "secondary_middle",
+        "secondary_right",
+      ],
       CouponType: ["PERCENTAGE", "FIXED_AMOUNT"],
     },
   },

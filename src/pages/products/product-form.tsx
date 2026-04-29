@@ -156,8 +156,7 @@ export function ProductForm({
         updatedAt: timestamp,
         authorId: existingProduct?.authorId ?? identity.id,
       };
-      console.log(productData);
-
+      
       if (!existingProduct) {
         const { data: newProduct, error } =
           await supabaseClient
