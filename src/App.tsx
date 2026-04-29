@@ -1,23 +1,12 @@
 import { Refine } from "@refinedev/core";
-import {
-  DevtoolsPanel,
-  DevtoolsProvider,
-} from "@refinedev/devtools";
-import {
-  RefineKbar,
-  RefineKbarProvider,
-} from "@refinedev/kbar";
+import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
+import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import routerProvider, {
   DocumentTitleHandler,
   NavigateToResource,
   UnsavedChangesNotifier,
 } from "@refinedev/react-router";
-import {
-  BrowserRouter,
-  Outlet,
-  Route,
-  Routes,
-} from "react-router";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router";
 import "./App.css";
 import { ErrorComponent } from "./components/refine-ui/layout/error-component";
 import { Layout } from "./components/refine-ui/layout/layout";
@@ -36,10 +25,7 @@ import {
 } from "lucide-react";
 import Products from "./pages/products/products";
 import { supabaseClient } from "./lib";
-import {
-  dataProvider,
-  liveProvider,
-} from "@refinedev/supabase";
+import { dataProvider, liveProvider } from "@refinedev/supabase";
 import UsersTablePage from "./pages/users/users";
 import EditProduct from "./pages/products/edit/edit-products";
 import Orders from "./pages/orders/orders";
@@ -54,6 +40,7 @@ import Coupon from "./pages/coupon/coupon";
 import AddCoupon from "./pages/coupon/add/add-coupon";
 import { ForgotPassword } from "./pages/forgot-password";
 import { OrderSummary } from "./pages/orders/order-summary";
+import { Authenticated } from "@refinedev/core";
 
 function App() {
   return (
@@ -100,14 +87,13 @@ function App() {
                     icon: <Ticket />,
                     label: "Coupons",
                   },
-                  
                 },
                 {
                   name: "Orders",
                   list: "/orders",
                   meta: {
                     icon: <ShoppingBag />,
-                    label: "Orders"
+                    label: "Orders",
                   },
                 },
                 {
@@ -141,66 +127,66 @@ function App() {
                 syncWithLocation: true,
                 warnWhenUnsavedChanges: true,
                 projectId: "GfdQqS-RL3UpX-tQ9E9W",
-                liveMode: "auto"
+                liveMode: "auto",
               }}
             >
               <Routes>
+                {/* Protected admin routes */}
                 <Route
                   element={
-                    <Layout>
-                      <Outlet />
-                    </Layout>
+                    <Authenticated
+                      key="protected-routes"
+                      fallback={<Navigate to="/login" replace />}
+                    >
+                      <Layout>
+                        <Outlet />
+                      </Layout>
+                    </Authenticated>
                   }
                 >
                   <Route
                     index
-                    element={
-                      <NavigateToResource resource="Dashboard" />
-                    }
+                    element={<NavigateToResource resource="Dashboard" />}
                   />
-                  <Route
-                    path="/dashboard"
-                    element={<Dashboard />}
-                  />
+
+                  <Route path="/dashboard" element={<Dashboard />} />
+
                   <Route path="/products">
                     <Route index element={<Products />} />
-                    <Route
-                      path="edit/:id"
-                      element={<EditProduct />}
-                    />
-                    <Route path="add-new" element={<AddProductPage/> }/>
+                    <Route path="edit/:id" element={<EditProduct />} />
+                    <Route path="add-new" element={<AddProductPage />} />
                   </Route>
-                  <Route
-                    path="/users"
-                    element={<UsersTablePage />}
-                  />
+
+                  <Route path="/users" element={<UsersTablePage />} />
+
                   <Route path="/coupons">
                     <Route index element={<Coupon />} />
                     <Route path="add-new" element={<AddCoupon />} />
                   </Route>
+
                   <Route path="/orders">
                     <Route index element={<Orders />} />
                     <Route path="summary/:id" element={<OrderSummary />} />
                   </Route>
 
-                  <Route path="/categories">
-                    <Route index element={<Categories />} />
-                  </Route>
-                  <Route
-                    path="/banner"
-                    element={<Banner />}
-                  />
-                  <Route path="/collections">
-                    <Route index element={<Collections />} />
-                  </Route>
-                  <Route
-                    path="*"
-                    element={<ErrorComponent />}
-                  />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/banner" element={<Banner />} />
+                  <Route path="/collections" element={<Collections />} />
                 </Route>
-                <Route path="/register" element={<Register />}/>
-                <Route path="/login" element={<Login />}/>
-                <Route path="/forgot-password" element={<ForgotPassword />}/>
+
+                {/* Public auth routes */}
+                <Route
+                  element={
+                    <Authenticated key="auth-routes" fallback={<Outlet />}>
+                      <Navigate to="/dashboard" replace />
+                    </Authenticated>
+                  }
+                >
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                </Route>
+                <Route path="*" element={<ErrorComponent />} />
               </Routes>
 
               <Toaster />
