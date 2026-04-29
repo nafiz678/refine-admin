@@ -65,7 +65,9 @@ export default function Coupon() {
             </span>
           </div>
         ),
-      }),
+        size: 200
+      },
+    ),
 
       columnHelper.accessor("couponType", {
         header: "Type",
@@ -85,6 +87,7 @@ export default function Coupon() {
             </Badge>
           );
         },
+        size: 120
       }),
 
       columnHelper.display({
