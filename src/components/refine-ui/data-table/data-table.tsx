@@ -1,5 +1,3 @@
-"use client";
-
 import type { BaseRecord, HttpError } from "@refinedev/core";
 import type { UseTableReturnType } from "@refinedev/react-table";
 import type { Column } from "@tanstack/react-table";
@@ -101,7 +99,7 @@ export function DataTable<TData extends BaseRecord>({
                         <div className={cn("flex", "items-center", "gap-1")}>
                           {flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                         </div>
                       )}
@@ -135,7 +133,7 @@ export function DataTable<TData extends BaseRecord>({
                         </TableCell>
                       ))}
                     </TableRow>
-                  )
+                  ),
                 )}
               </>
             ) : getRowModel().rows?.length ? (
@@ -159,7 +157,7 @@ export function DataTable<TData extends BaseRecord>({
                           <div className="truncate">
                             {flexRender(
                               cell.column.columnDef.cell,
-                              cell.getContext()
+                              cell.getContext(),
                             )}
                           </div>
                         </TableCell>
@@ -214,7 +212,7 @@ function DataTableNoData({
             "items-center",
             "justify-center",
             "gap-2",
-            "bg-background"
+            "bg-background",
           )}
           style={{
             position: isOverflowing.horizontal ? "sticky" : "absolute",
@@ -258,8 +256,8 @@ export function getCommonStyles<TData>({
       isOverflowing.horizontal && isLastLeftPinnedColumn
         ? "-4px 0 4px -4px var(--border) inset"
         : isOverflowing.horizontal && isFirstRightPinnedColumn
-        ? "4px 0 4px -4px var(--border) inset"
-        : undefined,
+          ? "4px 0 4px -4px var(--border) inset"
+          : undefined,
     left:
       isOverflowing.horizontal && isPinned === "left"
         ? `${column.getStart("left")}px`
