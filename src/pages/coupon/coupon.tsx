@@ -45,8 +45,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/refine-ui/layout/page-header";
 
-export type CouponProp =
-  Database["content"]["Tables"]["coupons"]["Row"];
+export type CouponProp = Database["content"]["Tables"]["coupons"]["Row"];
 
 export default function Coupon() {
   const columns = useMemo(() => {
@@ -65,9 +64,8 @@ export default function Coupon() {
             </span>
           </div>
         ),
-        size: 200
-      },
-    ),
+        minSize: 250,
+      }),
 
       columnHelper.accessor("couponType", {
         header: "Type",
@@ -81,13 +79,11 @@ export default function Coupon() {
                   : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
               }
             >
-              {type === "PERCENTAGE"
-                ? "Percentage"
-                : "Fixed Amount"}
+              {type === "PERCENTAGE" ? "Percentage" : "Fixed Amount"}
             </Badge>
           );
         },
-        size: 120
+        size: 120,
       }),
 
       columnHelper.display({
@@ -102,7 +98,7 @@ export default function Coupon() {
               ৳{row.original.discountAmount}
             </span>
           ),
-        size: 110,
+        size: 90,
       }),
 
       columnHelper.accessor("minCartValue", {
@@ -144,12 +140,11 @@ export default function Coupon() {
 
           return (
             <Badge className={bgColor}>
-              {status.charAt(0).toUpperCase() +
-                status.slice(1)}
+              {status.charAt(0).toUpperCase() + status.slice(1)}
             </Badge>
           );
         },
-        size: 100,
+        size: 90,
       }),
 
       columnHelper.accessor("startDate", {
@@ -183,18 +178,15 @@ export default function Coupon() {
             </span>
           );
         },
-        size: 120,
+        size: 100,
       }),
 
       columnHelper.display({
         id: "actions",
         header: "Actions",
         cell: ({ row }) => {
-          const onRefetch =
-            table.refineCore.tableQuery.refetch;
-          return (
-            <ActionsCell row={row} onRefetch={onRefetch} />
-          );
+          const onRefetch = table.refineCore.tableQuery.refetch;
+          return <ActionsCell row={row} onRefetch={onRefetch} />;
         },
       }),
     ];
@@ -244,11 +236,7 @@ export default function Coupon() {
         </div>
       </div>
 
-      <CouponStats
-        coupons={
-          table.refineCore.tableQuery.data?.data || []
-        }
-      />
+      <CouponStats coupons={table.refineCore.tableQuery.data?.data || []} />
 
       <ListView>
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
@@ -270,12 +258,12 @@ function ActionsCell({
   const { mutate: updateCoupon } = useUpdate();
 
   const [open, setOpen] = React.useState(false);
-  const [dateRange, setDateRange] = React.useState<
-    DateRange | undefined
-  >(() => ({
-    from: toDate(row.original.startDate),
-    to: toDate(row.original.endDate),
-  }));
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(
+    () => ({
+      from: toDate(row.original.startDate),
+      to: toDate(row.original.endDate),
+    }),
+  );
 
   const handleSave = () => {
     if (!dateRange?.from || !dateRange?.to) {
@@ -291,7 +279,7 @@ function ActionsCell({
       dateRange.from.getDate(),
       now.getHours(),
       now.getMinutes(),
-      now.getSeconds()
+      now.getSeconds(),
     );
 
     const end = new Date(
@@ -300,7 +288,7 @@ function ActionsCell({
       dateRange.to.getDate(),
       now.getHours(),
       now.getMinutes(),
-      now.getSeconds()
+      now.getSeconds(),
     );
 
     const payload = {
@@ -327,7 +315,7 @@ function ActionsCell({
           console.error("Update coupon failed", error);
           toast.error("Failed to update coupon");
         },
-      }
+      },
     );
   };
 
@@ -349,7 +337,7 @@ function ActionsCell({
           console.error("Delete coupon failed", error);
           toast.error("Failed to delete coupon");
         },
-      }
+      },
     );
   };
 
@@ -369,9 +357,7 @@ function ActionsCell({
 
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>
-              Update Coupon Duration
-            </DialogTitle>
+            <DialogTitle>Update Coupon Duration</DialogTitle>
           </DialogHeader>
 
           <div className="my-4">
@@ -389,14 +375,13 @@ function ActionsCell({
             <div>
               <div className="font-medium text-gray-900 dark:text-white">
                 Current:{" "}
-                {row.original.startDate &&
-                row.original.endDate
+                {row.original.startDate && row.original.endDate
                   ? `${format(
                       new Date(row.original.startDate),
-                      "MMM dd, yyyy"
+                      "MMM dd, yyyy",
                     )} — ${format(
                       new Date(row.original.endDate),
-                      "MMM dd, yyyy"
+                      "MMM dd, yyyy",
                     )}`
                   : "Not set"}
               </div>
@@ -415,10 +400,7 @@ function ActionsCell({
               Cancel
             </Button>
 
-            <Button
-              onClick={handleSave}
-              aria-label="Save coupon dates"
-            >
+            <Button onClick={handleSave} aria-label="Save coupon dates">
               Save Changes
             </Button>
           </DialogFooter>
@@ -439,9 +421,7 @@ function ActionsCell({
 
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Delete Coupon
-            </AlertDialogTitle>
+            <AlertDialogTitle>Delete Coupon</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete the coupon{" "}
               <span className="font-semibold text-gray-900 dark:text-white">
@@ -466,9 +446,7 @@ function ActionsCell({
   );
 }
 
-function toDate(
-  value: string | Date | null | undefined
-): Date | undefined {
+function toDate(value: string | Date | null | undefined): Date | undefined {
   if (!value) return undefined;
   if (value instanceof Date) return value;
   const d = new Date(value);
@@ -479,9 +457,9 @@ const formatLocalDateTime = (date: Date) => {
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return `${date.getFullYear()}-${pad(
-    date.getMonth() + 1
+    date.getMonth() + 1,
   )}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(
-    date.getMinutes()
+    date.getMinutes(),
   )}:${pad(date.getSeconds())}`;
 };
 
@@ -557,11 +535,7 @@ function Loader() {
   );
 }
 
-function CouponStats({
-  coupons,
-}: {
-  coupons: CouponProp[];
-}) {
+function CouponStats({ coupons }: { coupons: CouponProp[] }) {
   const now = new Date();
 
   const active = coupons.filter((c) => {
@@ -573,9 +547,7 @@ function CouponStats({
   const totalDiscount = coupons.reduce((acc, c) => {
     return (
       acc +
-      (c.couponType === "PERCENTAGE"
-        ? c.discountPercentage
-        : c.discountAmount)
+      (c.couponType === "PERCENTAGE" ? c.discountPercentage : c.discountAmount)
     );
   }, 0);
 
@@ -592,54 +564,39 @@ function CouponStats({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       {/* Active Coupons */}
-      <div
-        className="rounded-xl p-6 border"
-        style={cardStyle}
-      >
+      <div className="rounded-xl p-6 border" style={cardStyle}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-muted-foreground">
               Active Coupons
             </p>
-            <p className="text-3xl font-bold mt-2">
-              {active}
-            </p>
+            <p className="text-3xl font-bold mt-2">{active}</p>
           </div>
           <Tag className={iconClass} />
         </div>
       </div>
 
       {/* Total Coupons */}
-      <div
-        className="rounded-xl p-6 border"
-        style={cardStyle}
-      >
+      <div className="rounded-xl p-6 border" style={cardStyle}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-muted-foreground">
               Total Coupons
             </p>
-            <p className="text-3xl font-bold mt-2">
-              {coupons.length}
-            </p>
+            <p className="text-3xl font-bold mt-2">{coupons.length}</p>
           </div>
           <TrendingUp className={iconClass} />
         </div>
       </div>
 
       {/* Total Discount */}
-      <div
-        className="rounded-xl p-6 border"
-        style={cardStyle}
-      >
+      <div className="rounded-xl p-6 border" style={cardStyle}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-muted-foreground">
               Total Discount Value
             </p>
-            <p className="text-3xl font-bold mt-2">
-              {totalDiscount}
-            </p>
+            <p className="text-3xl font-bold mt-2">{totalDiscount}</p>
           </div>
           <Clock className={iconClass} />
         </div>
