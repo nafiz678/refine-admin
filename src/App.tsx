@@ -19,6 +19,7 @@ import {
   LayoutDashboard,
   PackageCheck,
   ShoppingBag,
+  StoreIcon,
   Tags,
   Ticket,
   Users2,
@@ -41,6 +42,7 @@ import AddCoupon from "./pages/coupon/add/add-coupon";
 import { ForgotPassword } from "./pages/forgot-password";
 import { OrderSummary } from "./pages/orders/order-summary";
 import { Authenticated } from "@refinedev/core";
+import { Store } from "./pages/stores/store";
 
 function App() {
   return (
@@ -114,6 +116,15 @@ function App() {
                   },
                 },
                 {
+                  name: "Stores",
+                  list: "/stores",
+                  meta: {
+                    icon: <StoreIcon />,
+                    label: "Stores",
+                    canDelete: true,
+                  },
+                },
+                {
                   name: "Collections",
                   list: "/collections",
                   meta: {
@@ -155,6 +166,10 @@ function App() {
                     <Route index element={<Products />} />
                     <Route path="edit/:id" element={<EditProduct />} />
                     <Route path="add-new" element={<AddProductPage />} />
+                  </Route>
+
+                  <Route path="/stores">
+                    <Route index element={<Store />} />
                   </Route>
 
                   <Route path="/users" element={<UsersTablePage />} />

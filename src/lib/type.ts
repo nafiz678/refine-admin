@@ -1,5 +1,7 @@
 import z from "zod";
-import { Database } from "./supabase";
+import type { supabaseClient } from "@/lib";
+import { ALL_VALUE } from "@/pages/stores/components/constants";
+import { Database, Enums, Tables } from "./supabase";
 
 export const productSchema = z.object({
   title: z
@@ -37,3 +39,35 @@ export const productSchema = z.object({
 });
 
 export type DBVariantFormData = Database["public"]["Tables"]["productVariant"]["Row"]
+
+
+// store types
+
+export type AppSupabaseClient = typeof supabaseClient;
+
+export type StoreRow = Tables<"storeInformation">;
+export type StoreType = Enums<"StoreType">;
+
+export type SortValue = "newest" | "oldest" | "name_asc" | "name_desc";
+
+export type StoreFilters = {
+  search: string;
+  city: string;
+  area: string;
+  storeType: StoreType | typeof ALL_VALUE;
+  status: "active" | "inactive" | typeof ALL_VALUE;
+  sort: SortValue;
+};
+
+export type StoreFormValues = {
+  store_name: string;
+  store_type: StoreType;
+  city: string;
+  area: string;
+  address: string;
+  contact_no: string;
+  google_map_url: string;
+  facebook_page_url: string;
+  image: string;
+  is_active: boolean;
+};
