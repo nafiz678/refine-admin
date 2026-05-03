@@ -510,6 +510,54 @@ export type Database = {
           },
         ]
       }
+      storeInformation: {
+        Row: {
+          address: string
+          area: string | null
+          city: string | null
+          contact_no: string
+          created_at: string | null
+          facebook_page_url: string | null
+          google_map_url: string
+          id: string
+          image: string | null
+          is_active: boolean
+          store_name: string
+          store_type: Database["public"]["Enums"]["StoreType"]
+          updated_at: string | null
+        }
+        Insert: {
+          address: string
+          area?: string | null
+          city?: string | null
+          contact_no: string
+          created_at?: string | null
+          facebook_page_url?: string | null
+          google_map_url: string
+          id?: string
+          image?: string | null
+          is_active: boolean
+          store_name: string
+          store_type: Database["public"]["Enums"]["StoreType"]
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string
+          area?: string | null
+          city?: string | null
+          contact_no?: string
+          created_at?: string | null
+          facebook_page_url?: string | null
+          google_map_url?: string
+          id?: string
+          image?: string | null
+          is_active?: boolean
+          store_name?: string
+          store_type?: Database["public"]["Enums"]["StoreType"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       subCategory: {
         Row: {
           categoryId: string
@@ -561,6 +609,7 @@ export type Database = {
       PaymentMethod: "COD" | "BKASH"
       Role: "USER" | "ADMIN" | "MODERATOR"
       Size: "XS" | "S" | "M" | "L" | "XL" | "XXL" | "ONE_SIZE"
+      StoreType: "Prime Shop" | "Flex Shop" | "Niche Shop"
       VariantStatus:
         | "IN_STOCK"
         | "LOW_STOCK"
@@ -720,6 +769,7 @@ export const Constants = {
       PaymentMethod: ["COD", "BKASH"],
       Role: ["USER", "ADMIN", "MODERATOR"],
       Size: ["XS", "S", "M", "L", "XL", "XXL", "ONE_SIZE"],
+      StoreType: ["Prime Shop", "Flex Shop", "Niche Shop"],
       VariantStatus: [
         "IN_STOCK",
         "LOW_STOCK",
