@@ -6,20 +6,16 @@ interface PageHeaderProps {
   className?: string;
 }
 
-export const PageHeader = ({
-  title,
-  subtitle,
-  className,
-}: PageHeaderProps) => {
+export const PageHeader = ({ title, subtitle, className }: PageHeaderProps) => {
   return (
     <div
       className={cn(
         "flex flex-col md:flex-row md:items-center md:justify-between gap-3 py-4",
-        className
+        className,
       )}
     >
       {/* Left Section */}
-      <div>
+      <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           {title}
         </h1>
